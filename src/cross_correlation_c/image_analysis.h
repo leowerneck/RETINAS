@@ -118,7 +118,7 @@ Cstate_struct *Cstate_initialize(
       const REAL B1 );
 
 // This function is implemented in Cstate_finalize.c
-int Cstate_finalize( Cstate_struct *restrict Cstate );
+void Cstate_finalize( Cstate_struct *restrict Cstate );
 
 // This function is implemented in typecast_input_image_and_compute_brightness.c
 REAL typecast_input_image_and_compute_brightness(
@@ -141,7 +141,7 @@ void upsample_and_compute_subpixel_displacements(
     REAL *restrict displacements );
 
 // This function is implemented in set_zeroth_eigenframe.c
-int set_zeroth_eigenframe( Cstate_struct *restrict Cstate );
+void set_zeroth_eigenframe( Cstate_struct *restrict Cstate );
 
 // This function is implemented in compute_reverse_shift_matrix.c
 void compute_reverse_shift_matrix(
@@ -158,7 +158,7 @@ void build_next_eigenframe(
     Cstate_struct *restrict Cstate );
 
 // This function is implemented in compute_displacements_and_build_next_eigenframe.c
-int compute_displacements_and_build_next_eigenframe(
+void compute_displacements_and_build_next_eigenframe(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements );
 

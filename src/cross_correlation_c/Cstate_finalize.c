@@ -1,6 +1,6 @@
 #include "image_analysis.h"
 
-int Cstate_finalize( Cstate_struct *restrict Cstate ) {
+void Cstate_finalize( Cstate_struct *restrict Cstate ) {
   /*
    *  Free memory for all pointers in the C state object,
    *  as well as the memory allocated for the object.
@@ -30,8 +30,4 @@ int Cstate_finalize( Cstate_struct *restrict Cstate ) {
 
   // Step 3: Free memory allocated for the C state struct
   free(Cstate);
-
-  // Step 4: All done!
-  return 0;
-
 }
