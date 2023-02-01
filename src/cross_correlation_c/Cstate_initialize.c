@@ -1,10 +1,33 @@
 #include "image_analysis.h"
 
-Cstate_struct *initialize_Cstate( const int N_horizontal,
-                                  const int N_vertical,
-                                  const REAL upsample_factor,
-                                  const REAL A0,
-                                  const REAL B1 ) {
+Cstate_struct *Cstate_initialize(
+      const int N_horizontal,
+      const int N_vertical,
+      const REAL upsample_factor,
+      const REAL A0,
+      const REAL B1 ) {
+  /*
+   *  Create a new C state object.
+   *
+   *  Inputs
+   *  ------
+   *    N_horizontal : int
+   *      Number of horizontal points in the images.
+   *    N_vertical : int
+   *      Number of vertical points in the images.
+   *    upsample_factor : REAL
+   *      Upsampling factor.
+   *    A0 : REAL
+   *      The new eigenframe is computed according to
+   *        eigenframe = A0*new_image + B1*eigenframe
+   *    B1 : REAL
+   *      See description for A0 above.
+   *
+   *  Returns
+   *  -------
+   *    Cstate : Cstate_struct *
+   *      The C state object, fully initialized.
+   */
 
   // Step 1: Allocate memory for the parameter struct
   Cstate_struct *Cstate = (Cstate_struct *)malloc(sizeof(Cstate_struct));
@@ -44,26 +67,4 @@ Cstate_struct *initialize_Cstate( const int N_horizontal,
 
   // Step 7: Return C state
   return Cstate;
-}
-
-int finalize_Cstate( Cstate_struct *restrict Cstate ) {
-
-  // Step 1: Free memory for all arrays
-  FFTW_FREE(Cstate->aux_array1);
-  FFTW_FREE(Cstate->aux_array2);
-  FFTW_FREE(Cstate->aux_array3);
-  FFTW_FREE(Cstate->new_image_time_domain);
-  FFTW_FREE(Cstate->new_image_freq_domain);
-  FFTW_FREE(Cstate->eigenframe_freq_domain);
-
-  // Step 2: Destroy FFT plans
-  FFTW_DESTROY_PLAN(Cstate->fft2_plan);
-  FFTW_DESTROY_PLAN(Cstate->ifft2_plan);
-
-  // Step 3: Free memory allocated for the parameter struct
-  free(Cstate);
-
-  // Step 4: All done!
-  return 0;
-
 }

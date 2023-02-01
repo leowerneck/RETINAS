@@ -22,7 +22,6 @@
 #ifdef __cplusplus
 #define restrict __restrict__
 #endif
-#define REAL float
 //********************************************
 
 
@@ -42,50 +41,57 @@
 // CBLAS library
 #include <cblas.h>
 
+// Precision macros
+#define SINGLE 0
+#define DOUBLE 1
+#define PRECISION SINGLE
+
 // Useful macros
-// #if sizeof(REAL) == sizeof(float)
-#define ROUND roundf
-#define FLOOR floorf
-#define CEIL ceilf
-#define COMPLEX fftwf_complex
-#define CREAL crealf
-#define CIMAG cimagf
-#define CABS cabsf
-#define CONJ conjf
-#define CEXP cexpf
-#define COMPLEX fftwf_complex
-#define FFTW_ALLOC_REAL fftwf_alloc_real
-#define FFTW_ALLOC_COMPLEX fftwf_alloc_complex
-#define FFTW_FREE fftwf_free
-#define FFTW_PLAN_DFT_2D fftwf_plan_dft_2d
-#define FFTW_PLAN fftwf_plan
-#define FFTW_DESTROY_PLAN fftwf_destroy_plan
-#define FFTW_EXECUTE fftwf_execute
-#define FFTW_EXECUTE_DFT fftwf_execute_dft
-#define FFTW_CLEANUP fftwf_cleanup
-#define CBLAS_GEMM cblas_cgemm
-// #else
-// #define ROUND round
-// #define FLOOR floor
-// #define CEIL ceil
-// #define COMPLEX fftw_complex
-// #define CREAL creal
-// #define CIMAG cimag
-// #define CABS cabs
-// #define CONJ conj
-// #define CEXP cexp
-// #define COMPLEX fftw_complex
-// #define FFTW_ALLOC_REAL fftw_alloc_real
-// #define FFTW_ALLOC_COMPLEX fftw_alloc_complex
-// #define FFTW_FREE fftw_free
-// #define FFTW_PLAN_DFT_2D fftw_plan_dft_2d
-// #define FFTW_PLAN fftw_plan
-// #define FFTW_DESTROY_PLAN fftw_destroy_plan
-// #define FFTW_EXECUTE fftw_execute
-// #define FFTW_EXECUTE_DFT fftw_execute_dft
-// #define FFTW_CLEANUP fftw_cleanup
-// #define CBLAS_GEMM cblas_zgemm
-// #endif
+#if PRECISION == SINGLE
+#  define REAL float
+#  define ROUND roundf
+#  define FLOOR floorf
+#  define CEIL ceilf
+#  define COMPLEX fftwf_complex
+#  define CREAL crealf
+#  define CIMAG cimagf
+#  define CABS cabsf
+#  define CONJ conjf
+#  define CEXP cexpf
+#  define COMPLEX fftwf_complex
+#  define FFTW_ALLOC_REAL fftwf_alloc_real
+#  define FFTW_ALLOC_COMPLEX fftwf_alloc_complex
+#  define FFTW_FREE fftwf_free
+#  define FFTW_PLAN_DFT_2D fftwf_plan_dft_2d
+#  define FFTW_PLAN fftwf_plan
+#  define FFTW_DESTROY_PLAN fftwf_destroy_plan
+#  define FFTW_EXECUTE fftwf_execute
+#  define FFTW_EXECUTE_DFT fftwf_execute_dft
+#  define FFTW_CLEANUP fftwf_cleanup
+#  define CBLAS_GEMM cblas_cgemm
+#else
+#  define REAL double
+#  define ROUND round
+#  define FLOOR floor
+#  define CEIL ceil
+#  define COMPLEX fftw_complex
+#  define CREAL creal
+#  define CIMAG cimag
+#  define CABS cabs
+#  define CONJ conj
+#  define CEXP cexp
+#  define COMPLEX fftw_complex
+#  define FFTW_ALLOC_REAL fftw_alloc_real
+#  define FFTW_ALLOC_COMPLEX fftw_alloc_complex
+#  define FFTW_FREE fftw_free
+#  define FFTW_PLAN_DFT_2D fftw_plan_dft_2d
+#  define FFTW_PLAN fftw_plan
+#  define FFTW_DESTROY_PLAN fftw_destroy_plan
+#  define FFTW_EXECUTE fftw_execute
+#  define FFTW_EXECUTE_DFT fftw_execute_dft
+#  define FFTW_CLEANUP fftw_cleanup
+#  define CBLAS_GEMM cblas_zgemm
+#endif
 
 // Image analysis parameter struct
 typedef struct Cstate_struct {
@@ -100,35 +106,60 @@ typedef struct Cstate_struct {
   COMPLEX *restrict eigenframe_freq_domain;
 } Cstate_struct;
 
-// Function prototypes
+// .---------------------.
+// | Function prototypes |
+// .---------------------.
+// This function is implemented in Cstate_initialize.c
+Cstate_struct *Cstate_initialize(
+      const int N_horizontal,
+      const int N_vertical,
+      const REAL upsample_factor,
+      const REAL A0,
+      const REAL B1 );
+
+// This function is implemented in Cstate_finalize.c
+int Cstate_finalize( Cstate_struct *restrict Cstate );
+
+// This function is implemented in typecast_input_image_and_compute_brightness.c
+REAL typecast_input_image_and_compute_brightness(
+    const uint16_t *restrict input_array,
+    Cstate_struct *restrict Cstate );
+
+// This function is implemented in typecast_input_image_rebin_4x4_and_compute_brightness.c
+REAL typecast_input_image_rebin_4x4_and_compute_brightness(
+    const uint16_t *restrict input_array,
+    Cstate_struct *restrict Cstate );
+
+// This function is implemented in get_displacements_by_cross_correlation.c
+void get_displacements_by_cross_correlation(
+    Cstate_struct *restrict Cstate,
+    REAL *restrict displacements );
+
+// This function is implemented in get_subpixel_displacement_by_upsampling.c
+void get_subpixel_displacements_by_upsampling(
+    Cstate_struct *restrict Cstate,
+    REAL *restrict displacements );
+
+// This function is implemented in set_zeroth_eigenframe.c
 int set_zeroth_eigenframe( Cstate_struct *restrict Cstate );
 
-int cross_correlate_and_build_next_eigenframe( Cstate_struct *restrict Cstate,
-                                               REAL *restrict displacement );
+// This function is implemented in compute_reverse_shift_matrix.c
+void compute_reverse_shift_matrix(
+    const int N_horizontal,
+    const int N_vertical,
+    const REAL *restrict displacements,
+    COMPLEX *restrict aux_array1,
+    COMPLEX *restrict aux_array2,
+    COMPLEX *restrict reverse_shift_matrix );
 
-void get_subpixel_displacement_by_upsampling( const int N_horizontal,
-                                              const int N_vertical,
-                                              const REAL upsample_factor,
-                                              FFTW_PLAN ifft2_plan,
-                                              COMPLEX *restrict aux_array1,
-                                              COMPLEX *restrict aux_array2,
-                                              COMPLEX *restrict aux_array3,
-                                              REAL *restrict displacement );
+// This function is implemented in build_next_eigenframe.c
+void build_next_eigenframe(
+    const REAL *restrict displacements,
+    Cstate_struct *restrict Cstate );
 
-Cstate_struct *initialize_Cstate( const int N_horizontal,
-                                  const int N_vertical,
-                                  const REAL upsample_factor,
-                                  const REAL A0,
-                                  const REAL B1 );
-
-int finalize_Cstate( Cstate_struct *restrict Cstate );
-
-int set_initial_eigenframe( Cstate_struct *restrict Cstate );
-
-REAL typecast_and_return_brightness( const uint16_t *restrict input_array,
-                                     Cstate_struct *restrict Cstate );
-
-REAL typecast_rebin_4x4_and_return_brightness( const uint16_t *restrict input_array,
-                                               Cstate_struct *restrict Cstate );
+// This function is implemented in compute_displacements.c
+int compute_displacements(
+    Cstate_struct *restrict Cstate,
+    REAL *restrict displacements );
 
 //********************************************

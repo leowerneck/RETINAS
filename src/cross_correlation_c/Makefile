@@ -8,10 +8,28 @@ LIB_DIR = ../../lib
 CC = gcc
 
 # Specify compilation flags.
-CFLAGS = -O2 -march=native -funroll-loops -Wall -std=gnu99 -shared -fPIC
+CFLAGS  = -O2 -march=native -funroll-loops -Wall -std=gnu99 -shared -fPIC -fopenmp
 
 # Specify the library flags
 LDFLAGS = -lm -lfftw3f -lcblas
+
+# Adjust flags if compiling on MacOS
+ifeq ($(shell uname -s),Darwin)
+  ifeq ($(BLAS_PATH),)
+    CFLAGS  += -I/usr/local/opt/openblas/include
+    LDFLAGS += -L/usr/local/opt/openblas/lib
+  else
+    CFLAGS  += -I$(BLAS_PATH)/include
+    LDFLAGS += -L$(BLAS_PATH)/lib
+  endif
+  ifeq ($(FFTW_PATH),)
+    CFLAGS  += -I/usr/local/opt/fftw/include
+    LDFLAGS += -L/usr/local/opt/fftw/lib
+  else
+    CFLAGS  += -I$(FFTW_PATH)/include
+    LDFLAGS += -L$(FFTW_PATH)/lib
+  endif
+endif
 
 # Source code files in the project
 SRC := $(wildcard *.c)
