@@ -7,13 +7,11 @@ void Cstate_finalize( Cstate_struct *restrict Cstate ) {
    *
    *  Inputs
    *  ------
-   *    Cstate : Cstate_struct *
-   *      Pointer to the Cstate object.
+   *    Cstate : Pointer to the Cstate object.
    *
    *  Returns
    *  -------
-   *    error_key : int
-   *      0 - success
+   *    Nothing.
    */
 
   // Step 1: Free memory for all arrays
@@ -30,4 +28,6 @@ void Cstate_finalize( Cstate_struct *restrict Cstate ) {
 
   // Step 3: Free memory allocated for the C state struct
   free(Cstate);
+
+  info("Successfully finalized C state object\n");
 }

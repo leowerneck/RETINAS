@@ -11,23 +11,25 @@ Cstate_struct *Cstate_initialize(
    *
    *  Inputs
    *  ------
-   *    N_horizontal : int
-   *      Number of horizontal points in the images.
-   *    N_vertical : int
-   *      Number of vertical points in the images.
-   *    upsample_factor : REAL
-   *      Upsampling factor.
-   *    A0 : REAL
-   *      The new eigenframe is computed according to
-   *        eigenframe = A0*new_image + B1*eigenframe
-   *    B1 : REAL
-   *      See description for A0 above.
+   *    N_horizontal    : Number of horizontal points in the images.
+   *    N_vertical      : Number of vertical points in the images.
+   *    upsample_factor : Upsampling factor.
+   *    A0              : See description for B1 below.
+   *    B1              : The new eigenframe is computed according to
+   *                      eigenframe = A0*new_image + B1*eigenframe.
    *
    *  Returns
    *  -------
-   *    Cstate : Cstate_struct *
-   *      The C state object, fully initialized.
+   *    Cstate          : The C state object, fully initialized.
    */
+
+  info("Initializing C state object.\n");
+  info("  Parameters:\n");
+  info("    N_horizontal    = %d\n", N_horizontal);
+  info("    N_vertical      = %d\n", N_vertical);
+  info("    upsample_factor = %g\n", upsample_factor);
+  info("    A0              = %g\n", A0);
+  info("    B1              = %g\n", B1);
 
   // Step 1: Allocate memory for the parameter struct
   Cstate_struct *Cstate = (Cstate_struct *)malloc(sizeof(Cstate_struct));
@@ -56,15 +58,18 @@ Cstate_struct *Cstate_initialize(
 
   // Step 6: Create the FFT plans
   // Step 6.a: Forward FFT (the pointers here are dummy, they just need enough memory allocated)
-  Cstate->fft2_plan = FFTW_PLAN_DFT_2D(N_vertical,N_horizontal,
-                                       Cstate->new_image_time_domain,Cstate->new_image_freq_domain,
-                                       FFTW_FORWARD ,FFTW_ESTIMATE);
+  Cstate->fft2_plan = FFTW_PLAN_DFT_2D(N_vertical, N_horizontal,
+                                       Cstate->new_image_time_domain, Cstate->new_image_freq_domain,
+                                       FFTW_FORWARD, FFTW_ESTIMATE);
 
   // Step 6.b: Inverse FFT (the pointers here are dummy, they just need enough memory allocated)
-  Cstate->ifft2_plan = FFTW_PLAN_DFT_2D(N_vertical,N_horizontal,
-                                        Cstate->new_image_time_domain,Cstate->new_image_freq_domain,
-                                        FFTW_BACKWARD,FFTW_ESTIMATE);
+  Cstate->ifft2_plan = FFTW_PLAN_DFT_2D(N_vertical, N_horizontal,
+                                        Cstate->new_image_time_domain, Cstate->new_image_freq_domain,
+                                        FFTW_BACKWARD, FFTW_ESTIMATE);
 
-  // Step 7: Return C state
+  // Step 7: Print basic information to the user
+  info("Successfully initialized C state object\n");
+
+  // Step 8: Return C state
   return Cstate;
 }

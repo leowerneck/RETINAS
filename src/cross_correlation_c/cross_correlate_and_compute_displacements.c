@@ -9,10 +9,8 @@ void cross_correlate_and_compute_displacements(
    *
    *  Inputs
    *  ------
-   *    Cstate : Cstate_struct *
-   *      The C state object, containing the new image.
-   *    displacements : REAL *
-   *      Stores the result.
+   *    Cstate        : The C state object, containing the new image.
+   *    displacements : Stores the result.
    *
    *  Returns
    *  -------

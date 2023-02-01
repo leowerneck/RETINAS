@@ -6,13 +6,11 @@ void set_zeroth_eigenframe( Cstate_struct *restrict Cstate ) {
    *
    *  Inputs
    *  ------
-   *    Cstate : Cstate_struct *
-   *       The C state object, containing the new image.
+   *    Cstate : The C state object, containing the new image.
    *
    *  Returns
    *  -------
-   *     error_key : int
-   *       0 - success
+   *     Nothing.
    */
 
   // Step 1: Compute FFT of the new_image_time_domain and

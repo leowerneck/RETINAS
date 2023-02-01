@@ -8,15 +8,12 @@ void compute_displacements_and_build_next_eigenframe(
    *
    *  Inputs
    *  ------
-   *    Cstate : Cstate_struct *
-   *      The C state object, containing the new and reference images.
-   *    displacements : REAL *
-   *      Stores the result.
+   *    Cstate        : The C state object, containing the new and reference images.
+   *    displacements : Stores the result.
    *
    *  Returns
    *  -------
-   *    error_key : int
-   *      0 - success
+   *    Nothing.
    */
 
   // Step 1: Compute the displacements via cross-correlation

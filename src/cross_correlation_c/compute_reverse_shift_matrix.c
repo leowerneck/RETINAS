@@ -12,18 +12,12 @@ void compute_reverse_shift_matrix(
    *
    *  Inputs
    *  ------
-   *    N_horizontal : int
-   *      Number of horizontal points.
-   *    N_vertical : int
-   *      Number of vertical points.
-   *    displacements : REAL *
-   *      Array of horizontal and vertical displacements. Stores the result.
-   *    aux_array1 : COMPLEX *
-   *      Empty auxiliary array.
-   *    aux_array2 : COMPLEX *
-   *      Empty auxiliary array.
-   *    reverse_shift_matrix : COMPLEX *
-   *      Array to store the result.
+   *    N_horizontal         : Number of horizontal points.
+   *    N_vertical           : Number of vertical points.
+   *    displacements        : Horizontal and vertical displacements.
+   *    aux_array1           : Empty auxiliary array.
+   *    aux_array2           : Empty auxiliary array.
+   *    reverse_shift_matrix : Store the result.
    *
    *  Returns
    *  -------

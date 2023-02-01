@@ -7,13 +7,11 @@ int round_towards_zero(const REAL x) {
    *
    *  Inputs
    *  ------
-   *    x : REAL
-   *      Number to be rounded.
+   *    x : Number to be rounded.
    *
    *  Returns
    *  -------
-   *    y : REAL
-   *      Number rounded towards zero.
+   *    y : Number rounded towards zero.
    */
   if( x > 0.0 )
     return FLOOR(x);
@@ -35,18 +33,12 @@ void complex_matrix_multiply(
    *
    *  Inputs
    *  ------
-   *    m : int
-   *      Common dimension of matrices A and C.
-   *    p : int
-   *      Common dimension of matrices A and B.
-   *    n : int
-   *      Common dimension of matrices B and C.
-   *    A : void *
-   *      Flattened matrix of dimension m x p.
-   *    B : void *
-   *      Flattened matrix of dimension p x n.
-   *    C : void *
-   *      Flattened matrix of dimension m x n. Stores the result.
+   *    m : Common dimension of matrices A and C.
+   *    p : Common dimension of matrices A and B.
+   *    n : Common dimension of matrices B and C.
+   *    A : Flattened matrix of dimension m x p.
+   *    B : Flattened matrix of dimension p x n.
+   *    C : Flattened matrix of dimension m x n. Stores the result.
    *
    *  Returns
    *  -------
@@ -73,18 +65,12 @@ void complex_matrix_multiply_tt(
    *
    *  Inputs
    *  ------
-   *    m : int
-   *      Common dimension of matrices A and C.
-   *    p : int
-   *      Common dimension of matrices A and B.
-   *    n : int
-   *      Common dimension of matrices B and C.
-   *    A : void *
-   *      Flattened matrix of dimension m x p. AT is p x m.
-   *    B : void *
-   *      Flattened matrix of dimension p x n. BT is n x p.
-   *    C : void *
-   *      Flattened matrix of dimension n x m. Stores the result.
+   *    m : Common dimension of matrices A and C.
+   *    p : Common dimension of matrices A and B.
+   *    n : Common dimension of matrices B and C.
+   *    A : Flattened matrix of dimension m x p. AT is p x m.
+   *    B : Flattened matrix of dimension p x n. BT is n x p.
+   *    C : Flattened matrix of dimension n x m. Stores the result.
    *
    *  Returns
    *  -------
@@ -106,10 +92,8 @@ void upsample_and_compute_subpixel_displacements(
    *
    *  Inputs
    *  ------
-   *    Cstate : Cstate_struct *
-   *      The C state object containing all required data.
-   *    displacements : REAL *
-   *      Array of horizontal and vertical displacements. Stores the result.
+   *    Cstate        : The C state object containing all required data.
+   *    displacements : Array of horizontal and vertical displacements. Stores the result.
    *
    *  Returns
    *  -------

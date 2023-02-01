@@ -9,10 +9,8 @@ void build_next_eigenframe(
    *
    *  Inputs
    *  ------
-   *    displacements : REAL *
-   *      Array containing the horizontal and vertical displacements.
-   *    Cstate : Cstate_struct *
-   *      The C state object, containing the new eigenframe.
+   *    displacements : Array containing the horizontal and vertical displacements.
+   *    Cstate        : The C state object, containing the new eigenframe.
    *
    *  Returns
    *  -------
@@ -20,14 +18,20 @@ void build_next_eigenframe(
    */
 
   // Step 1: Compute the reverse shift matrix
-  compute_reverse_shift_matrix(Cstate->N_horizontal, Cstate->N_vertical, displacements,
-                               Cstate->aux_array1,Cstate->aux_array2,Cstate->aux_array3);
+  compute_reverse_shift_matrix(Cstate->N_horizontal,
+                               Cstate->N_vertical,
+                               displacements,
+                               Cstate->aux_array1,
+                               Cstate->aux_array2,
+                               Cstate->aux_array3);
 
   // Step 2: Now shift the new image and add it to the eigenframe
   for(int j=0;j<Cstate->N_vertical;j++) {
     for(int i=0;i<Cstate->N_horizontal;i++) {
       const int idx = i+Cstate->N_horizontal*j;
-      Cstate->eigenframe_freq_domain[idx] = Cstate->A0*(Cstate->new_image_freq_domain[idx]*Cstate->aux_array3[idx]) + Cstate->B1*Cstate->eigenframe_freq_domain[idx];
+      Cstate->eigenframe_freq_domain[idx] =
+        Cstate->A0*Cstate->new_image_freq_domain[idx]*Cstate->aux_array3[idx]
+      + Cstate->B1*Cstate->eigenframe_freq_domain[idx];
     }
   }
 }

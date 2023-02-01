@@ -12,15 +12,12 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
    *
    *  Inputs
    *  ------
-   *    input_array : uint16_t *
-   *      Input image stored as a 1D array.
-   *    Cstate : Cstate_struct *
-   *      Pointer to the Cstate object.
+   *    input_array : Input image stored as a 1D array.
+   *    Cstate      : Pointer to the Cstate object.
    *
    *  Returns
    *  -------
-   *     brightness : REAL
-   *       Brightness of the image.
+   *     brightness : Brightness of the image.
    */
 
   // Step 1: Initialize local sum to zero

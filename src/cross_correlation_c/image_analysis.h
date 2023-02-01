@@ -6,11 +6,12 @@
 //********************************************
 // Basic definitions for module outputC:
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
-#include "string.h" // "string.h Needed for strncmp, etc.
-#include "stdint.h" // "stdint.h" Needed for Windows GCC 6.x compatibility, and for int8_t
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h> // "string.h Needed for strncmp, etc.
+#include <stdint.h> // "stdint.h" Needed for Windows GCC 6.x compatibility, and for int8_t
+#include <stdarg.h>
 
 #ifndef M_PI
 #define M_PI 3.141592653589793238462643383279502884L
@@ -111,11 +112,11 @@ typedef struct Cstate_struct {
 // .---------------------.
 // This function is implemented in Cstate_initialize.c
 Cstate_struct *Cstate_initialize(
-      const int N_horizontal,
-      const int N_vertical,
-      const REAL upsample_factor,
-      const REAL A0,
-      const REAL B1 );
+    const int N_horizontal,
+    const int N_vertical,
+    const REAL upsample_factor,
+    const REAL A0,
+    const REAL B1 );
 
 // This function is implemented in Cstate_finalize.c
 void Cstate_finalize( Cstate_struct *restrict Cstate );
@@ -130,6 +131,9 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
     const uint16_t *restrict input_array,
     Cstate_struct *restrict Cstate );
 
+// This function is implemented in set_zeroth_eigenframe.c
+void set_zeroth_eigenframe( Cstate_struct *restrict Cstate );
+
 // This function is implemented in cross_correlate_and_compute_displacements.c
 void cross_correlate_and_compute_displacements(
     Cstate_struct *restrict Cstate,
@@ -139,9 +143,6 @@ void cross_correlate_and_compute_displacements(
 void upsample_and_compute_subpixel_displacements(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements );
-
-// This function is implemented in set_zeroth_eigenframe.c
-void set_zeroth_eigenframe( Cstate_struct *restrict Cstate );
 
 // This function is implemented in compute_reverse_shift_matrix.c
 void compute_reverse_shift_matrix(
@@ -161,5 +162,18 @@ void build_next_eigenframe(
 void compute_displacements_and_build_next_eigenframe(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements );
+
+static inline
+void info(const char *format, ...) {
+  /*
+   *  Slightly modified printf which appends the
+   *  code name to the beginning of the message.
+   */
+  printf("(RETINA) ");
+  va_list args;
+  va_start(args, format);
+  vprintf(format, args);
+  va_end(args);
+}
 
 //********************************************
