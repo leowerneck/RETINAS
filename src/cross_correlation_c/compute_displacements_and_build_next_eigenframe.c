@@ -1,6 +1,6 @@
 #include "image_analysis.h"
 
-int compute_displacements(
+int compute_displacements_and_build_next_eigenframe(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements ) {
   /*

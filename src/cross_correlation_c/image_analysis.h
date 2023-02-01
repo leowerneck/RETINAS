@@ -157,8 +157,8 @@ void build_next_eigenframe(
     const REAL *restrict displacements,
     Cstate_struct *restrict Cstate );
 
-// This function is implemented in compute_displacements.c
-int compute_displacements(
+// This function is implemented in compute_displacements_and_build_next_eigenframe.c
+int compute_displacements_and_build_next_eigenframe(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements );
 
