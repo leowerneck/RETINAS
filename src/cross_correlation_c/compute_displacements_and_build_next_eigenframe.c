@@ -20,11 +20,11 @@ int compute_displacements_and_build_next_eigenframe(
    */
 
   // Step 1: Compute the displacements via cross-correlation
-  get_displacements_by_cross_correlation(Cstate, displacements);
+  cross_correlate_and_compute_displacements(Cstate, displacements);
 
   // Step 2: Compute the displacements using upsampling
   if( (int)(Cstate->upsample_factor+0.5) > 1 )
-    get_subpixel_displacements_by_upsampling(Cstate, displacements);
+    upsample_and_compute_subpixel_displacements(Cstate, displacements);
 
   // Step 3: Build next eigenframe
   build_next_eigenframe(displacements, Cstate);

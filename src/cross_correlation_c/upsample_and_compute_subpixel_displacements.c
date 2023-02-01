@@ -97,12 +97,12 @@ void complex_matrix_multiply_tt(
              n,m,p,a,B,p,A,m,b,C,m);
 }
 
-void get_subpixel_displacements_by_upsampling(
+void upsample_and_compute_subpixel_displacements(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements ) {
   /*
-   *  Computes the upsampled displacment between the new image
-   *  and the reference image.
+   *  Upsample the region around displacements and recompute
+   *  them with subpixel precision.
    *
    *  Inputs
    *  ------

@@ -130,13 +130,13 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
     const uint16_t *restrict input_array,
     Cstate_struct *restrict Cstate );
 
-// This function is implemented in get_displacements_by_cross_correlation.c
-void get_displacements_by_cross_correlation(
+// This function is implemented in cross_correlate_and_compute_displacements.c
+void cross_correlate_and_compute_displacements(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements );
 
-// This function is implemented in get_subpixel_displacement_by_upsampling.c
-void get_subpixel_displacements_by_upsampling(
+// This function is implemented in upsample_and_compute_subpixel_displacements.c
+void upsample_and_compute_subpixel_displacements(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements );
 

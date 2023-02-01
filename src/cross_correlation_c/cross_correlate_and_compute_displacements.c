@@ -1,6 +1,6 @@
 #include "image_analysis.h"
 
-void get_displacements_by_cross_correlation(
+void cross_correlate_and_compute_displacements(
     Cstate_struct *restrict Cstate,
     REAL *restrict displacements ) {
   /*
