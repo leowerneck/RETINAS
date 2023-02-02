@@ -2,7 +2,7 @@
 
 void build_next_eigenframe(
     const REAL *restrict displacements,
-    Cstate_struct *restrict Cstate ) {
+    state_struct *restrict state ) {
   /*
    *  Find the displacements by finding the maxima of the
    *  cross-correlation between the new and reference images.
@@ -10,7 +10,7 @@ void build_next_eigenframe(
    *  Inputs
    *  ------
    *    displacements : Array containing the horizontal and vertical displacements.
-   *    Cstate        : The C state object, containing the new eigenframe.
+   *    state        : The C state object, containing the new eigenframe.
    *
    *  Returns
    *  -------
@@ -18,20 +18,20 @@ void build_next_eigenframe(
    */
 
   // Step 1: Compute the reverse shift matrix
-  compute_reverse_shift_matrix(Cstate->N_horizontal,
-                               Cstate->N_vertical,
+  compute_reverse_shift_matrix(state->N_horizontal,
+                               state->N_vertical,
                                displacements,
-                               Cstate->aux_array1,
-                               Cstate->aux_array2,
-                               Cstate->aux_array3);
+                               state->aux_array1,
+                               state->aux_array2,
+                               state->aux_array3);
 
   // Step 2: Now shift the new image and add it to the eigenframe
-  for(int j=0;j<Cstate->N_vertical;j++) {
-    for(int i=0;i<Cstate->N_horizontal;i++) {
-      const int idx = i+Cstate->N_horizontal*j;
-      Cstate->eigenframe_freq_domain[idx] =
-        Cstate->A0*Cstate->new_image_freq_domain[idx]*Cstate->aux_array3[idx]
-      + Cstate->B1*Cstate->eigenframe_freq_domain[idx];
+  for(int j=0;j<state->N_vertical;j++) {
+    for(int i=0;i<state->N_horizontal;i++) {
+      const int idx = i+state->N_horizontal*j;
+      state->eigenframe_freq_domain[idx] =
+        state->A0*state->new_image_freq_domain[idx]*state->aux_array3[idx]
+      + state->B1*state->eigenframe_freq_domain[idx];
     }
   }
 }

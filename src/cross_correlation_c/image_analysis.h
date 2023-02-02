@@ -95,7 +95,7 @@
 #endif
 
 // Image analysis parameter struct
-typedef struct Cstate_struct {
+typedef struct state_struct {
   int N_horizontal, N_vertical;
   REAL upsample_factor, A0, B1;
   FFTW_PLAN fft2_plan, ifft2_plan;
@@ -105,43 +105,43 @@ typedef struct Cstate_struct {
   COMPLEX *restrict new_image_time_domain;
   COMPLEX *restrict new_image_freq_domain;
   COMPLEX *restrict eigenframe_freq_domain;
-} Cstate_struct;
+} state_struct;
 
 // .---------------------.
 // | Function prototypes |
 // .---------------------.
-// This function is implemented in Cstate_initialize.c
-Cstate_struct *Cstate_initialize(
+// This function is implemented in state_initialize.c
+state_struct *state_initialize(
     const int N_horizontal,
     const int N_vertical,
     const REAL upsample_factor,
     const REAL A0,
     const REAL B1 );
 
-// This function is implemented in Cstate_finalize.c
-void Cstate_finalize( Cstate_struct *restrict Cstate );
+// This function is implemented in state_finalize.c
+void state_finalize( state_struct *restrict state );
 
 // This function is implemented in typecast_input_image_and_compute_brightness.c
 REAL typecast_input_image_and_compute_brightness(
     const uint16_t *restrict input_array,
-    Cstate_struct *restrict Cstate );
+    state_struct *restrict state );
 
 // This function is implemented in typecast_input_image_rebin_4x4_and_compute_brightness.c
 REAL typecast_input_image_rebin_4x4_and_compute_brightness(
     const uint16_t *restrict input_array,
-    Cstate_struct *restrict Cstate );
+    state_struct *restrict state );
 
 // This function is implemented in set_zeroth_eigenframe.c
-void set_zeroth_eigenframe( Cstate_struct *restrict Cstate );
+void set_zeroth_eigenframe( state_struct *restrict state );
 
 // This function is implemented in cross_correlate_and_compute_displacements.c
 void cross_correlate_and_compute_displacements(
-    Cstate_struct *restrict Cstate,
+    state_struct *restrict state,
     REAL *restrict displacements );
 
 // This function is implemented in upsample_and_compute_subpixel_displacements.c
 void upsample_and_compute_subpixel_displacements(
-    Cstate_struct *restrict Cstate,
+    state_struct *restrict state,
     REAL *restrict displacements );
 
 // This function is implemented in compute_reverse_shift_matrix.c
@@ -156,11 +156,11 @@ void compute_reverse_shift_matrix(
 // This function is implemented in build_next_eigenframe.c
 void build_next_eigenframe(
     const REAL *restrict displacements,
-    Cstate_struct *restrict Cstate );
+    state_struct *restrict state );
 
 // This function is implemented in compute_displacements_and_build_next_eigenframe.c
 void compute_displacements_and_build_next_eigenframe(
-    Cstate_struct *restrict Cstate,
+    state_struct *restrict state,
     REAL *restrict displacements );
 
 static inline

@@ -1,7 +1,7 @@
 #include "image_analysis.h"
 
 void cross_correlate_and_compute_displacements(
-    Cstate_struct *restrict Cstate,
+    state_struct *restrict state,
     REAL *restrict displacements ) {
   /*
    *  Find the displacements by finding the maxima of the
@@ -9,7 +9,7 @@ void cross_correlate_and_compute_displacements(
    *
    *  Inputs
    *  ------
-   *    Cstate        : The C state object, containing the new image.
+   *    state        : The C state object, containing the new image.
    *    displacements : Stores the result.
    *
    *  Returns
@@ -18,22 +18,22 @@ void cross_correlate_and_compute_displacements(
    */
 
   // Step 1: Compute the FFT of the new image
-  FFTW_EXECUTE_DFT(Cstate->fft2_plan,Cstate->new_image_time_domain,Cstate->new_image_freq_domain);
+  FFTW_EXECUTE_DFT(state->fft2_plan,state->new_image_time_domain,state->new_image_freq_domain);
 
   // Step 2: Compute image product target * src^{*}
-  const int N_horizontal = Cstate->N_horizontal;
-  const int N_vertical   = Cstate->N_vertical;
+  const int N_horizontal = state->N_horizontal;
+  const int N_vertical   = state->N_vertical;
   for(int j=0;j<N_vertical;j++) {
     for(int i=0;i<N_horizontal;i++) {
       const int idx = i + N_horizontal*j;
-      Cstate->aux_array1[idx] = Cstate->new_image_freq_domain[idx]*CONJ(Cstate->eigenframe_freq_domain[idx]);
+      state->aux_array1[idx] = state->new_image_freq_domain[idx]*CONJ(state->eigenframe_freq_domain[idx]);
     }
   }
 
   // Step 3: Compute the cross correlation
   // Note: aux_array1 stores the image product and
   //       aux_array2 stores the cross correlation
-  FFTW_EXECUTE_DFT(Cstate->ifft2_plan,Cstate->aux_array1,Cstate->aux_array2);
+  FFTW_EXECUTE_DFT(state->ifft2_plan,state->aux_array1,state->aux_array2);
 
   // Step 4: Full-pixel estimate of the cross correlation maxima
   int i_max=0,j_max=0;
@@ -41,7 +41,7 @@ void cross_correlate_and_compute_displacements(
   for(int j=0;j<N_vertical;j++) {
     for(int i=0;i<N_horizontal;i++) {
       const int idx = i + N_horizontal*j;
-      const REAL cc = CABS(Cstate->aux_array2[idx]);
+      const REAL cc = CABS(state->aux_array2[idx]);
       if( cc > cc_max ) {
         cc_max = cc;
         i_max  = i;

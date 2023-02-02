@@ -2,7 +2,7 @@
 
 REAL typecast_input_image_and_compute_brightness(
     const uint16_t *restrict input_array,
-    Cstate_struct *restrict Cstate ) {
+    state_struct *restrict state ) {
   /*
    *  Typecast the input image from uint16 to REAL. Also compute the
    *  brightness, which is the sum of all pixel values in the image.
@@ -10,7 +10,7 @@ REAL typecast_input_image_and_compute_brightness(
    *  Inputs
    *  ------
    *    input_array : Input image stored as a 1D array.
-   *    Cstate      : Pointer to the Cstate object.
+   *    state      : Pointer to the state object.
    *
    *  Returns
    *  -------
@@ -22,16 +22,16 @@ REAL typecast_input_image_and_compute_brightness(
 
   // Step 2: Loop over the array, summing its entries
   //         and typecasting to the output array
-  for(int j=0;j<Cstate->N_vertical;j++) {
-    for(int i=0;i<Cstate->N_horizontal;i++) {
+  for(int j=0;j<state->N_vertical;j++) {
+    for(int i=0;i<state->N_horizontal;i++) {
       // Step 2.a: Set local index
-      const int idx = i + Cstate->N_horizontal*j;
+      const int idx = i + state->N_horizontal*j;
 
       // Step 2.b: Typecast input array value
       const REAL value = (REAL)input_array[idx];
 
       // Step 2.c: Write to output array
-      Cstate->new_image_time_domain[idx] = value + I*0.0f;
+      state->new_image_time_domain[idx] = value + I*0.0f;
 
       // Step 2.d: Add to total sum
       brightness += value;

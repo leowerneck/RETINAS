@@ -2,7 +2,7 @@
 
 REAL typecast_input_image_rebin_4x4_and_compute_brightness(
     const uint16_t *restrict input_array,
-    Cstate_struct *restrict Cstate ) {
+    state_struct *restrict state ) {
   /*
    *  Typecast the input image from uint16 to REAL. In the process,
    *  the image is rebinned to a imsage of size (Nh/4, Nv/4), with
@@ -13,7 +13,7 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
    *  Inputs
    *  ------
    *    input_array : Input image stored as a 1D array.
-   *    Cstate      : Pointer to the Cstate object.
+   *    state      : Pointer to the state object.
    *
    *  Returns
    *  -------
@@ -25,8 +25,8 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
 
   // Step 2: Loop over the array, summing its entries
   //         typecasting it, and binning to the output array
-  const int N_horizontal_original = 4*Cstate->N_horizontal;
-  const int N_vertical_original   = 4*Cstate->N_vertical;
+  const int N_horizontal_original = 4*state->N_horizontal;
+  const int N_vertical_original   = 4*state->N_vertical;
   for(int j=0;j<N_vertical_original;j+=4) {
     for(int i=0;i<N_horizontal_original;i+=4) {
       // Step 3.a: Sum all values in the current bin
@@ -38,7 +38,7 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
         }
       }
       // Step 3.b: Set the binned array to the pixel sum
-      Cstate->new_image_time_domain[(i + Cstate->N_horizontal*j)/4] = bin_value;
+      state->new_image_time_domain[(i + state->N_horizontal*j)/4] = bin_value;
 
       // Step 3.c: Add pixel sum to the total accumulated sum
       brightness += bin_value;

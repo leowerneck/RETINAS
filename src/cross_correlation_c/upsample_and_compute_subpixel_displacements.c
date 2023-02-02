@@ -84,7 +84,7 @@ void complex_matrix_multiply_tt(
 }
 
 void upsample_and_compute_subpixel_displacements(
-    Cstate_struct *restrict Cstate,
+    state_struct *restrict state,
     REAL *restrict displacements ) {
   /*
    *  Upsample the region around displacements and recompute
@@ -92,7 +92,7 @@ void upsample_and_compute_subpixel_displacements(
    *
    *  Inputs
    *  ------
-   *    Cstate        : The C state object containing all required data.
+   *    state        : The C state object containing all required data.
    *    displacements : Array of horizontal and vertical displacements. Stores the result.
    *
    *  Returns
@@ -101,7 +101,7 @@ void upsample_and_compute_subpixel_displacements(
    */
 
   // Step 1: Adjust the displacements based on the upsample factor
-  const REAL upsample_factor = Cstate->upsample_factor;
+  const REAL upsample_factor = state->upsample_factor;
   for(int i=0;i<2;i++) displacements[i] = ROUND(displacements[i] * upsample_factor)/upsample_factor;
 
   // Step 2: Set size of upsampled region
@@ -121,8 +121,8 @@ void upsample_and_compute_subpixel_displacements(
   const int S = (int)upsampled_region_size;
 
   // Step 7: Compute the horizontal kernel
-  const int N_horizontal     = Cstate->N_horizontal;
-  const int N_vertical       = Cstate->N_vertical;
+  const int N_horizontal     = state->N_horizontal;
+  const int N_vertical       = state->N_vertical;
   const int nhalf_horizontal = FLOOR((N_horizontal-1)/2.0)+1;
   const REAL norm_horizontal = 1.0/(N_horizontal*upsample_factor);
   REAL fft_freq;
@@ -135,19 +135,19 @@ void upsample_and_compute_subpixel_displacements(
         fft_freq = (-FLOOR(N_horizontal/2.0)+i_h-nhalf_horizontal) * norm_horizontal;
       }
       const REAL kernel_l = (i_s - sample_region_offset[0])*fft_freq;
-      Cstate->aux_array2[i_s+S*i_h] = CEXP(im2pi * kernel_l);
+      state->aux_array2[i_s+S*i_h] = CEXP(im2pi * kernel_l);
     }
   }
 
   // Step 8: Contract the horizontal kernel with the conjugate of the image product
   for(int i=0;i<N_horizontal*N_vertical;i++) {
-    Cstate->aux_array1[i] = CONJ(Cstate->aux_array1[i]);
+    state->aux_array1[i] = CONJ(state->aux_array1[i]);
   }
   // Note: aux_array1 contains the complex conjugate of the image product,
   //       aux_array2 contains the horizontal kernel, and
   //       aux_array3 will contain the matrix product of aux_array2 and aux_array1.
   complex_matrix_multiply(S,N_horizontal, N_vertical,
-                          Cstate->aux_array2, Cstate->aux_array1, Cstate->aux_array3);
+                          state->aux_array2, state->aux_array1, state->aux_array3);
 
   // Step 9: Compute the vertical kernel
   const int nhalf_vertical = FLOOR((N_vertical-1)/2.0)+1;
@@ -161,7 +161,7 @@ void upsample_and_compute_subpixel_displacements(
         fft_freq = (-FLOOR(N_vertical/2.0)+i_v-nhalf_vertical) * norm_vertical;
       }
       const REAL kernel_l = (i_s - sample_region_offset[1])*fft_freq;
-      Cstate->aux_array2[i_v+N_vertical*i_s] = CEXP(im2pi * kernel_l);
+      state->aux_array2[i_v+N_vertical*i_s] = CEXP(im2pi * kernel_l);
     }
   }
 
@@ -170,14 +170,14 @@ void upsample_and_compute_subpixel_displacements(
   //       aux_array2 contains the vertical kernel, and
   //       aux_array3 is the same as in Step 8.
   complex_matrix_multiply_tt(S, N_vertical, S,
-                             Cstate->aux_array3, Cstate->aux_array2, Cstate->aux_array1);
+                             state->aux_array3, state->aux_array2, state->aux_array1);
 
   // Step 10: Get maximum of upsampled image
   int i_max=0,j_max=0;
   REAL cc_max = -1.0;
   for(int j_s=0;j_s<S;j_s++) {
     for(int i_s=0;i_s<S;i_s++) {
-      const REAL cc = CABS(Cstate->aux_array1[i_s + S*j_s]);
+      const REAL cc = CABS(state->aux_array1[i_s + S*j_s]);
       if( cc > cc_max ) {
         cc_max = cc;
         // FIXME: Why do I need to flip?
