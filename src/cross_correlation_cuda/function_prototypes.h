@@ -65,9 +65,12 @@ void compute_reverse_shift_2D(const int N_horizontal,
                               COMPLEX *restrict vertical_shifts,
                               COMPLEX *restrict shift2D);
 
-// This function is implemented in complex_conjugate.cu
+// This function is implemented in complex_conjugate_2d.cu
 __host__
-void complex_conjugate(const int m, const int n, const int mn, COMPLEX *restrict z);
+void complex_conjugate_2d(
+    const int m,
+    const int n,
+    COMPLEX *restrict z );
 
 // This function is implemented in element_wise_multiplication_conj.cu
 __host__
@@ -110,13 +113,13 @@ void compute_horizontal_kernel(const REAL *restrict sample_region_offset, CUDAst
 __host__
 void compute_vertical_kernel(const REAL *restrict sample_region_offset, CUDAstate_struct *restrict CUDAstate);
 
-// This function is implemented in compute_absolute_value.cu
+// This function is implemented in absolute_value_2d.cu
 __host__
-void compute_absolute_value(const int m,
-                            const int n,
-                            const int mn,
-                            const COMPLEX *restrict z,
-                            REAL *restrict x);
+void absolute_value_2d(
+    const int m,
+    const int n,
+    const COMPLEX *restrict z,
+    REAL *restrict x );
 
 // Inline function to compute the exponential of a complex number
 __host__ __device__

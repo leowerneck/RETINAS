@@ -133,6 +133,7 @@ def initialize_library(libpath, real=float, c_real=c_float):
     # void compute_displacements_and_build_next_eigenframe(
     #     state_struct *restrict state,
     #     REAL *restrict displacements );
-    setup_func(lib.build_next_eigenframe, [c_void_p, c_real_p], None)
+    setup_func(lib.compute_displacements_and_build_next_eigenframe,
+               [c_void_p, c_real_p], None)
 
     return lib

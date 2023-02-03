@@ -57,11 +57,11 @@ void get_subpixel_displacement_by_upsampling(CUDAstate_struct *restrict CUDAstat
   compute_horizontal_kernel(sample_region_offset, CUDAstate);
 
   // Step 8: Contract the horizontal kernel with the conjugate of the image product
-  complex_conjugate(Nh,Nv,NhNv,CUDAstate->aux_array1);
+  complex_conjugate_2d(Nh, Nv, CUDAstate->aux_array1);
   // Note: aux_array1 contains the complex conjugate of the image product,
   //       aux_array2 contains the horizontal kernel, and
   //       aux_array3 will contain the matrix product of aux_array2 and aux_array1.
-  complex_matrix_multiply(CUDAstate->cublasHandle,S,Nh,Nv,CUDAstate->aux_array2,CUDAstate->aux_array1,CUDAstate->aux_array3);  
+  complex_matrix_multiply(CUDAstate->cublasHandle,S,Nh,Nv,CUDAstate->aux_array2,CUDAstate->aux_array1,CUDAstate->aux_array3);
 
   // Step 9: Compute the vertical kernel
   compute_vertical_kernel(sample_region_offset, CUDAstate);

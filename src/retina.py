@@ -105,3 +105,39 @@ class retina:
             self.state, cast(displacements.ctypes.data, self.c_real_p))
 
         return displacements
+
+    def compute_displacements_wrt_ref_image_and_build_next_eigenframe(self, new_image):
+        """
+          Compute the displacements with respect to the reference image.
+
+          Inputs
+          ------
+            new_image : NumPy array
+              NumPy array containing the new image.
+
+          Returns
+          -------
+            displacements : NumPy array
+              NumPy array containing the displacements.
+        """
+
+        if self.first_image:
+            new_image, h_0, v_0 = \
+                center_array_max_return_displacements(new_image, real=self.real)
+
+            brightness = self.lib.typecast_input_image_and_compute_brightness(
+                cast(new_image.ctypes.data, self.c_uint16_p), self.state)
+
+            self.lib.set_zeroth_eigenframe(self.state)
+            self.first_image = False
+
+            return array([h_0, v_0])
+
+        brightness = self.lib.typecast_input_image_and_compute_brightness(
+            cast(new_image.ctypes.data, self.c_uint16_p), self.state)
+
+        displacements = array([0, 0], dtype=self.real)
+        self.lib.compute_displacements_and_build_next_eigenframe(
+            self.state, cast(displacements.ctypes.data, self.c_real_p))
+
+        return displacements
