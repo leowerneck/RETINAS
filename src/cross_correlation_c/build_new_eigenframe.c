@@ -4,13 +4,13 @@ void build_next_eigenframe(
     const REAL *restrict displacements,
     state_struct *restrict state ) {
   /*
-   *  Find the displacements by finding the maxima of the
-   *  cross-correlation between the new and reference images.
+   *  Construct the next eigenframe using:
+   *   eigenframe_new = A0*new_image + B1*eigenframe_old.
    *
    *  Inputs
    *  ------
    *    displacements : Array containing the horizontal and vertical displacements.
-   *    state        : The C state object, containing the new eigenframe.
+   *    state         : The C state object, containing the new eigenframe.
    *
    *  Returns
    *  -------

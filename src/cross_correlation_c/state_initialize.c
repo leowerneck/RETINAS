@@ -20,7 +20,7 @@ state_struct *state_initialize(
    *
    *  Returns
    *  -------
-   *    state          : The C state object, fully initialized.
+   *    state           : The C state object, fully initialized.
    */
 
   info("Initializing C state object.\n");

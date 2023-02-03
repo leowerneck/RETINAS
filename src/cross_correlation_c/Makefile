@@ -11,7 +11,7 @@ CC = gcc
 CFLAGS  = -O2 -march=native -funroll-loops -Wall -std=gnu99 -shared -fPIC -fopenmp
 
 # Specify the library flags
-LDFLAGS = -lm -lfftw3f -lcblas
+LDFLAGS = -lm -lfftw3 -lcblas
 
 # Adjust flags if compiling on MacOS
 ifeq ($(shell uname -s),Darwin)

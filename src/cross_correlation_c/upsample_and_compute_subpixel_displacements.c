@@ -92,7 +92,7 @@ void upsample_and_compute_subpixel_displacements(
    *
    *  Inputs
    *  ------
-   *    state        : The C state object containing all required data.
+   *    state         : The C state object containing all required data.
    *    displacements : Array of horizontal and vertical displacements. Stores the result.
    *
    *  Returns
