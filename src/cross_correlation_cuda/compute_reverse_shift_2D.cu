@@ -47,12 +47,14 @@ void compute_reverse_shift_2D_gpu(const int N_horizontal,
 }
 
 extern "C" __host__
-void compute_reverse_shift_2D(const int N_horizontal,
-                              const int N_vertical,
-                              const REAL *restrict displacements,
-                              COMPLEX *restrict horizontal_shifts,
-                              COMPLEX *restrict vertical_shifts,
-                              COMPLEX *restrict shift2D) {
+void compute_reverse_shift_matrix(
+    const int N_horizontal,
+    const int N_vertical,
+    const REAL *restrict displacements,
+    COMPLEX *restrict horizontal_shifts,
+    COMPLEX *restrict vertical_shifts,
+    COMPLEX *restrict shift2D ) {
+
   // Step 1: Compute the horizontal shift
   const int Nho2 = N_horizontal/2;
   compute_shift_1D_gpu<<<MIN(Nho2,512),MIN(Nho2,512)>>>(N_horizontal, displacements[0], horizontal_shifts);

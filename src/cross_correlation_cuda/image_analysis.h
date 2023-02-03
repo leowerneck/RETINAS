@@ -51,63 +51,59 @@
 
 // Useful macros
 #if PRECISION == SINGLE
-
-#define REAL float
-#define ROUND roundf
-#define FLOOR floorf
-#define CEIL ceilf
-#define COMPLEX cuFloatComplex
-#define MAKE_COMPLEX make_cuFloatComplex
-#define CREAL cuCrealf
-#define CIMAG cuCimagf
-#define ABS fabsf
-#define CABS cuCabsf
-#define CONJ cuConjf
-#define SIN sinf
-#define COS cosf
-#define EXP expf
-#define CMUL cuCmulf
-#define FFT_PLAN cufftHandle
-#define FFT_PLAN_DFT_2D cufftPlan2d
-#define FFT_EXECUTE_DFT cufftExecC2C
-#define FFT_DESTROY_PLAN cufftDestroy
-#define FFT_C2C CUFFT_C2C
-#define CUBLASCGEMM cublasCgemm
-#define CUBLASIAMAX cublasIsamax
-#define CUBLASASUM cublasSasum
-
+#  define REAL float
+#  define ROUND roundf
+#  define FLOOR floorf
+#  define CEIL ceilf
+#  define COMPLEX cuFloatComplex
+#  define MAKE_COMPLEX make_cuFloatComplex
+#  define CREAL cuCrealf
+#  define CIMAG cuCimagf
+#  define ABS fabsf
+#  define CABS cuCabsf
+#  define CONJ cuConjf
+#  define SIN sinf
+#  define COS cosf
+#  define EXP expf
+#  define CMUL cuCmulf
+#  define FFT_PLAN cufftHandle
+#  define FFT_PLAN_DFT_2D cufftPlan2d
+#  define FFT_EXECUTE_DFT cufftExecC2C
+#  define FFT_DESTROY_PLAN cufftDestroy
+#  define FFT_C2C CUFFT_C2C
+#  define CUBLASCGEMM cublasCgemm
+#  define CUBLASIAMAX cublasIsamax
+#  define CUBLASASUM cublasSasum
 #elif PRECISION == DOUBLE
-
-#define REAL double
-#define ROUND round
-#define FLOOR floor
-#define CEIL ceil
-#define COMPLEX cuDoubleComplex
-#define MAKE_COMPLEX make_cuDoubleComplex
-#define CREAL cuCreal
-#define CIMAG cuCimag
-#define CABS cuCabs
-#define ABS fabs
-#define CONJ cuConj
-#define SIN sin
-#define COS cos
-#define EXP exp
-#define CMUL cuCmul
-#define FFT_PLAN cufftHandle
-#define FFT_PLAN_DFT_2D cufftPlan2d
-#define FFT_EXECUTE_DFT cufftExecZ2Z
-#define FFT_DESTROY_PLAN cufftDestroy
-#define FFT_C2C CUFFT_Z2Z
-#define CUBLASCGEMM cublasZgemm
-#define CUBLASIAMAX cublasIdamax
-#define CUBLASASUM cublasDasum
-
+#  define REAL double
+#  define ROUND round
+#  define FLOOR floor
+#  define CEIL ceil
+#  define COMPLEX cuDoubleComplex
+#  define MAKE_COMPLEX make_cuDoubleComplex
+#  define CREAL cuCreal
+#  define CIMAG cuCimag
+#  define CABS cuCabs
+#  define ABS fabs
+#  define CONJ cuConj
+#  define SIN sin
+#  define COS cos
+#  define EXP exp
+#  define CMUL cuCmul
+#  define FFT_PLAN cufftHandle
+#  define FFT_PLAN_DFT_2D cufftPlan2d
+#  define FFT_EXECUTE_DFT cufftExecZ2Z
+#  define FFT_DESTROY_PLAN cufftDestroy
+#  define FFT_C2C CUFFT_Z2Z
+#  define CUBLASCGEMM cublasZgemm
+#  define CUBLASIAMAX cublasIdamax
+#  define CUBLASASUM cublasDasum
 #else
 #  error "Unknown precision"
 #endif
 
 // Image analysis parameter struct
-typedef struct CUDAstate_struct {
+typedef struct state_struct {
   int N_horizontal, N_vertical;
   REAL upsample_factor, A0, B1;
   uint16_t *aux_array_int;         // GPU (device)
@@ -121,7 +117,7 @@ typedef struct CUDAstate_struct {
   COMPLEX *eigenframe_freq_domain; // GPU (device)
   FFT_PLAN fft2_plan;
   cublasHandle_t cublasHandle;
-} CUDAstate_struct;
+} state_struct;
 
 #include "function_prototypes.h"
 

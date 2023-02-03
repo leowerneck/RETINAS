@@ -75,23 +75,23 @@ void compute_vertical_kernel_gpu(const int Nv, const int S, const REAL offset_v,
 }
 
 extern "C" __host__
-void compute_horizontal_kernel(const REAL *restrict sample_region_offset, CUDAstate_struct *restrict CUDAstate) {
-  const int Nh = CUDAstate->N_horizontal;
-  const int S  = (int)(CUDAstate->upsample_factor*1.5+0.5);
+void compute_horizontal_kernel(const REAL *restrict sample_region_offset, state_struct *restrict state) {
+  const int Nh = state->N_horizontal;
+  const int S  = (int)(state->upsample_factor*1.5+0.5);
   // aux_array1 contains the image product at this point. Use 2 or 3 instead.
   // Compute the horizontal frequencies and store them in freq_array
-  fftfreq(Nh, CUDAstate->upsample_factor, CUDAstate->aux_array_real);
+  fftfreq(Nh, state->upsample_factor, state->aux_array_real);
   // Now compute the horizontal kernel, storing it in aux_array2
-  compute_horizontal_kernel_gpu<<<dim3(32,16),dim3(32,16)>>>(S,Nh,sample_region_offset[0],CUDAstate->aux_array_real,CUDAstate->aux_array2);
+  compute_horizontal_kernel_gpu<<<dim3(32,16),dim3(32,16)>>>(S,Nh,sample_region_offset[0],state->aux_array_real,state->aux_array2);
 }
 
 extern "C" __host__
-void compute_vertical_kernel(const REAL *restrict sample_region_offset, CUDAstate_struct *restrict CUDAstate) {
-  const int Nv = CUDAstate->N_vertical;
-  const int S  = (int)(CUDAstate->upsample_factor*1.5+0.5);
+void compute_vertical_kernel(const REAL *restrict sample_region_offset, state_struct *restrict state) {
+  const int Nv = state->N_vertical;
+  const int S  = (int)(state->upsample_factor*1.5+0.5);
   // aux_array3 contains the contraction at this point. Use 1 or 2 instead.
   // Compute the vertical frequencies and store them in freq_array
-  fftfreq(Nv, CUDAstate->upsample_factor, CUDAstate->aux_array_real);
+  fftfreq(Nv, state->upsample_factor, state->aux_array_real);
   // Now compute the vertical kernel, storing it in aux_array2
-  compute_vertical_kernel_gpu<<<dim3(32,16),dim3(32,16)>>>(Nv,S,sample_region_offset[1],CUDAstate->aux_array_real,CUDAstate->aux_array2);
+  compute_vertical_kernel_gpu<<<dim3(32,16),dim3(32,16)>>>(Nv,S,sample_region_offset[1],state->aux_array_real,state->aux_array2);
 }

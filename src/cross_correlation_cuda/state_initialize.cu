@@ -1,11 +1,35 @@
 #include "image_analysis.h"
 
 extern "C" __host__
-state_struct *initialize_state( const int N_horizontal,
-                                  const int N_vertical,
-                                  const REAL upsample_factor,
-                                  const REAL A0,
-                                  const REAL B1 ) {
+state_struct *state_initialize(
+    const int N_horizontal,
+    const int N_vertical,
+    const REAL upsample_factor,
+    const REAL A0,
+    const REAL B1 ) {
+  /*
+   *  Create a new CUDA state object.
+   *
+   *  Inputs
+   *  ------
+   *    N_horizontal    : Number of horizontal points in the images.
+   *    N_vertical      : Number of vertical points in the images.
+   *    upsample_factor : Upsampling factor.
+   *    A0              : See description for B1 below.
+   *    B1              : The new eigenframe is computed according to
+   *                      eigenframe = A0*new_image + B1*eigenframe.
+   *
+   *  Returns
+   *  -------
+   *    state           : The CUDA state object, fully initialized.
+   */
+  info("Initializing CUDA state object.\n");
+  info("  Parameters:\n");
+  info("    N_horizontal    = %d\n", N_horizontal);
+  info("    N_vertical      = %d\n", N_vertical);
+  info("    upsample_factor = %g\n", upsample_factor);
+  info("    A0              = %g\n", A0);
+  info("    B1              = %g\n", B1);
 
   // Step 1: Allocate memory for the parameter struct
   state_struct *state = (state_struct *)malloc(sizeof(state_struct));
@@ -44,36 +68,9 @@ state_struct *initialize_state( const int N_horizontal,
   // Step 5.d: Create the cuBLAS handle
   cublasCreate(&state->cublasHandle);
 
-  // Step 6: All done! Return the CUDA state object
+  // Step 6: Print basic information to the user
+  info("Successfully initialized C state object\n");
+
+  // Step 7: All done! Return the CUDA state object
   return state;
-}
-
-extern "C" __host__
-int finalize_state( state_struct *restrict state ) {
-
-  // Step 1: Free memory for all host arrays
-  free(state->host_aux_array);
-
-  // Step 2: Free memory for all device arrays
-  cudaFree(state->aux_array_int);
-  cudaFree(state->aux_array_real);
-  cudaFree(state->aux_array1);
-  cudaFree(state->aux_array2);
-  cudaFree(state->aux_array3);
-  cudaFree(state->new_image_time_domain);
-  cudaFree(state->new_image_freq_domain);
-  cudaFree(state->eigenframe_freq_domain);
-
-  // Step 3: Destroy FFT plans
-  FFT_DESTROY_PLAN(state->fft2_plan);
-
-  // Step 4: Destroy cuBLAS handle
-  cublasDestroy(state->cublasHandle);
-
-  // Step 5: Free memory allocated for the state struct
-  free(state);
-
-  // Step 6: All done!
-  return 0;
-
 }
