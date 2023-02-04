@@ -74,6 +74,7 @@
 #  define FFT_C2C CUFFT_C2C
 #  define CUBLASCGEMM cublasCgemm
 #  define CUBLASIAMAX cublasIsamax
+#  define CUBLASIAMIN cublasIsamin
 #  define CUBLASASUM cublasSasum
 #elif PRECISION == DOUBLE
 #  define REAL double
@@ -98,6 +99,7 @@
 #  define FFT_C2C CUFFT_Z2Z
 #  define CUBLASCGEMM cublasZgemm
 #  define CUBLASIAMAX cublasIdamax
+#  define CUBLASIAMIN cublasIdamin
 #  define CUBLASASUM cublasDasum
 #else
 #  error "Unknown precision"
@@ -105,6 +107,7 @@
 
 // Image analysis parameter struct
 typedef struct state_struct {
+  bool eigenshot;
   int N_horizontal, N_vertical;
   REAL upsample_factor, A0, B1;
   uint16_t *aux_array_int;         // GPU (device)
