@@ -83,9 +83,16 @@ void absolute_value_2d(
     const COMPLEX *restrict z,
     REAL *restrict x );
 
-// This function is implemented in find_maxima.cu
+// This function is implemented in find_maxima_minima.cu
 __host__
 int find_maxima(
+    cublasHandle_t h,
+    const int n,
+    REAL *restrict x );
+
+// This function is implemented in find_maxima_minima.cu
+__host__
+int find_minima(
     cublasHandle_t h,
     const int n,
     REAL *restrict x );

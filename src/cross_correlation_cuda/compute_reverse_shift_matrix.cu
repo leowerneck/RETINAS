@@ -64,7 +64,7 @@ void compute_reverse_shift_matrix(
   compute_shift_1d_gpu<<<MIN(Nho2,512),MIN(Nho2,512)>>>(N_horizontal, displacements[0], horizontal_shifts);
 
   // Step 2: Compute the vertical shift
-  const int Nvo2 = N_horizontal/2;
+  const int Nvo2 = N_vertical/2;
   compute_shift_1d_gpu<<<MIN(Nvo2,512),MIN(Nvo2,512)>>>(N_vertical, displacements[1], vertical_shifts);
 
   // Step 3: Compute the reverse shift 2D
