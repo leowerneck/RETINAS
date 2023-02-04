@@ -51,14 +51,14 @@ void cross_correlate_and_compute_displacements(
   // i = idx - Nh*j
   const int j_max = idx_max/Nh;
   const int i_max = idx_max - j_max*Nh;
-  displacement[0] = (REAL)i_max;
-  displacement[1] = (REAL)j_max;
+  displacements[0] = (REAL)i_max;
+  displacements[1] = (REAL)j_max;
 
   // Step 5: Compute midpoint
   const int midpoint[2] = {Nh/2,Nv/2};
 
-  // Step 6: If the displacement is larger than the midpoint,
+  // Step 6: If the displacements are larger than the midpoint,
   //         then subtract N_horizontal or N_vertical, accordingly
-  if( displacement[0] > midpoint[0] ) displacement[0] -= Nh;
-  if( displacement[1] > midpoint[1] ) displacement[1] -= Nv;
+  if( displacements[0] > midpoint[0] ) displacements[0] -= Nh;
+  if( displacements[1] > midpoint[1] ) displacements[1] -= Nv;
 }

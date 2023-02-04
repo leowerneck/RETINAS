@@ -13,6 +13,7 @@ int round_towards_zero(const REAL x) {
    *  -------
    *    y : Number rounded towards zero.
    */
+
   if( x > 0.0 )
     return FLOOR(x);
   else
@@ -21,7 +22,7 @@ int round_towards_zero(const REAL x) {
 
 __host__ static inline
 void complex_matrix_multiply(
-    cublasHandle_t cublasHandle,
+    cublasHandle_t h,
     const int m,
     const int p,
     const int n,
@@ -34,6 +35,7 @@ void complex_matrix_multiply(
    *
    *  Inputs
    *  ------
+   *    h : cuBLAS handle object.
    *    m : Common dimension of matrices A and C.
    *    p : Common dimension of matrices A and B.
    *    n : Common dimension of matrices B and C.
@@ -46,15 +48,15 @@ void complex_matrix_multiply(
    *    Nothing.
    */
 
-  const COMPLEX alpha = MAKE_COMPLEX(1.0,0.0);
-  const COMPLEX beta  = MAKE_COMPLEX(0.0,0.0);
-  CUBLASCGEMM(cublasHandle,CUBLAS_OP_N,CUBLAS_OP_N,
-              m,n,p,&alpha,A,m,B,p,&beta,C,m);
+  const COMPLEX alpha = MAKE_COMPLEX(1.0, 0.0);
+  const COMPLEX beta  = MAKE_COMPLEX(0.0, 0.0);
+  CUBLASCGEMM(h, CUBLAS_OP_N, CUBLAS_OP_N, m, n, p,
+              &alpha, A, m, B, p, &beta, C, m);
 }
 
 __host__ static inline
 void complex_matrix_multiply_tt(
-    cublasHandle_t cublasHandle,
+    cublasHandle_t h,
     const int m,
     const int p,
     const int n,
@@ -67,6 +69,7 @@ void complex_matrix_multiply_tt(
    *
    *  Inputs
    *  ------
+   *    h : cuBLAS handle object.
    *    m : Common dimension of matrices A and C.
    *    p : Common dimension of matrices A and B.
    *    n : Common dimension of matrices B and C.
@@ -81,8 +84,8 @@ void complex_matrix_multiply_tt(
 
   const COMPLEX alpha = MAKE_COMPLEX(1.0,0.0);
   const COMPLEX beta  = MAKE_COMPLEX(0.0,0.0);
-  CUBLASCGEMM(cublasHandle,CUBLAS_OP_T,CUBLAS_OP_T,
-              n,m,p,&alpha,B,p,A,m,&beta,C,m);
+  CUBLASCGEMM(h, CUBLAS_OP_T, CUBLAS_OP_T, n, m, p,
+              &alpha, B, p, A, m, &beta, C, m);
 }
 
 extern "C" __host__
@@ -107,13 +110,12 @@ void upsample_and_compute_subpixel_displacements(
   //       image product, while aux_array2 and aux_array3 are empty.
   //
   // Step 1: Set basic variables
-  const int Nh   = state->N_horizontal;
-  const int Nv   = state->N_vertical;
-  const int NhNv = Nh*Nv;
+  const int Nh = state->N_horizontal;
+  const int Nv = state->N_vertical;
   const REAL upsample_factor = state->upsample_factor;
 
-  // Step 2: Adjust the displacement based on the upsample factor
-  for(int i=0;i<2;i++) displacement[i] = ROUND(displacement[i] * upsample_factor)/upsample_factor;
+  // Step 2: Adjust the displacements based on the upsample factor
+  for(int i=0;i<2;i++) displacements[i] = ROUND(displacements[i] * upsample_factor)/upsample_factor;
 
   // Step 3: Set size of upsampled region
   const REAL upsampled_region_size = CEIL(upsample_factor * 1.5);
@@ -123,7 +125,7 @@ void upsample_and_compute_subpixel_displacements(
 
   // Step 5: Compute upsample region offset
   REAL sample_region_offset[2];
-  for(int i=0;i<2;i++) sample_region_offset[i] = dftshift - displacement[i]*upsample_factor;
+  for(int i=0;i<2;i++) sample_region_offset[i] = dftshift - displacements[i]*upsample_factor;
 
   // Step 6: Upsampled size
   const int S  = (int)upsampled_region_size;
@@ -154,7 +156,7 @@ void upsample_and_compute_subpixel_displacements(
   const int i_max   = idx_max/S;
   const int j_max   = idx_max - i_max*S;
 
-  // Step 11: Update the displacement
-  displacement[0] += ((REAL)i_max - dftshift)/upsample_factor;
-  displacement[1] += ((REAL)j_max - dftshift)/upsample_factor;
+  // Step 11: Update the displacements
+  displacements[0] += ((REAL)i_max - dftshift)/upsample_factor;
+  displacements[1] += ((REAL)j_max - dftshift)/upsample_factor;
 }

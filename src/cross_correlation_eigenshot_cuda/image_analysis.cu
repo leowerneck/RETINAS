@@ -1,35 +1,6 @@
 #include "image_analysis.h"
 
 __host__
-int dump_eigenframe( CUDAstate_struct *restrict CUDAstate ) {
-
-  const int Nh = CUDAstate->N_horizontal;
-  const int Nv = CUDAstate->N_vertical;
-
-  FFT_EXECUTE_DFT(CUDAstate->fft2_plan,
-                  CUDAstate->reciprocal_eigenframe_freq,
-                  CUDAstate->aux_array1,
-                  CUFFT_INVERSE);
-
-  cudaMemcpy(CUDAstate->host_aux_array,
-             CUDAstate->aux_array1,
-             sizeof(COMPLEX)*Nh*Nv,
-             cudaMemcpyDeviceToHost);
-
-  FILE *fp = fopen("eigenframe_cross_correlation_eigenshot_CUDA.txt", "w");
-  for(int i=0;i<Nh;i++) {
-    for(int j=0;j<Nv;j++) {
-      const COMPLEX z = CUDAstate->host_aux_array[i+Nh*j];
-      fprintf(fp, "%d %d %.15e %.15e\n", i, j, CREAL(z)/(Nh*Nv), CIMAG(z)/(Nh*Nv));
-    }
-    fprintf(fp, "\n");
-  }
-  fclose(fp);
-
-  return 0;
-}
-
-__host__
 int set_zeroth_eigenframe( CUDAstate_struct *restrict CUDAstate ) {
 
   // Step 1: Compute FFT of the new_image_time and
@@ -44,8 +15,8 @@ int set_zeroth_eigenframe( CUDAstate_struct *restrict CUDAstate ) {
 
 }
 
-int cross_correlate_and_build_next_eigenframe(CUDAstate_struct *restrict CUDAstate,
-                                              REAL *restrict displacement) {
+int compute_displacements_and_build_next_eigenframe( CUDAstate_struct *restrict CUDAstate,
+                                                     REAL *restrict displacement ) {
 
   // Step 1: Compute the FFT of the new image
   FFT_EXECUTE_DFT(CUDAstate->fft2_plan,

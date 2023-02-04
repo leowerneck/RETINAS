@@ -1,7 +1,10 @@
 #include "image_analysis.h"
 
 __global__
-void compute_shift_1D_gpu(const int N, const REAL displacement, COMPLEX *restrict shift) {
+static void compute_shift_1d_gpu(
+    const int N,
+    const REAL displacement,
+    COMPLEX *restrict shift ) {
 
   // Step 1: Get thread index and stride
   int tid    = threadIdx.x + blockIdx.x * blockDim.x;
@@ -23,11 +26,12 @@ void compute_shift_1D_gpu(const int N, const REAL displacement, COMPLEX *restric
 
 // This function is used to compute a reverse shift.
 __global__
-void compute_reverse_shift_2D_gpu(const int N_horizontal,
-                                  const int N_vertical,
-                                  const COMPLEX *restrict horizontal_shifts,
-                                  const COMPLEX *restrict vertical_shifts,
-                                  COMPLEX *restrict shift2D) {
+static void compute_reverse_shift_2d_gpu(
+    const int N_horizontal,
+    const int N_vertical,
+    const COMPLEX *restrict horizontal_shifts,
+    const COMPLEX *restrict vertical_shifts,
+    COMPLEX *restrict reverse_shift ) {
 
   // Step 1: Set the thread indices
   int tidx    = threadIdx.x + blockIdx.x*blockDim.x;
@@ -40,7 +44,7 @@ void compute_reverse_shift_2D_gpu(const int N_horizontal,
     const COMPLEX vshift = vertical_shifts[i_y];
     for(int i_x=tidx;i_x<N_horizontal;i_x+=stridex) {
       const COMPLEX hshift = horizontal_shifts[i_x];
-      shift2D[i_x + N_horizontal*i_y] = CMUL(hshift, vshift);
+      reverse_shift[i_x + N_horizontal*i_y] = CMUL(hshift, vshift);
     }
   }
 
@@ -57,14 +61,14 @@ void compute_reverse_shift_matrix(
 
   // Step 1: Compute the horizontal shift
   const int Nho2 = N_horizontal/2;
-  compute_shift_1D_gpu<<<MIN(Nho2,512),MIN(Nho2,512)>>>(N_horizontal, displacements[0], horizontal_shifts);
+  compute_shift_1d_gpu<<<MIN(Nho2,512),MIN(Nho2,512)>>>(N_horizontal, displacements[0], horizontal_shifts);
 
   // Step 2: Compute the vertical shift
   const int Nvo2 = N_horizontal/2;
-  compute_shift_1D_gpu<<<MIN(Nvo2,512),MIN(Nvo2,512)>>>(N_vertical, displacements[1], vertical_shifts);
+  compute_shift_1d_gpu<<<MIN(Nvo2,512),MIN(Nvo2,512)>>>(N_vertical, displacements[1], vertical_shifts);
 
   // Step 3: Compute the reverse shift 2D
-  compute_reverse_shift_2D_gpu<<<dim3(32,16),dim3(32,16)>>>(N_horizontal, N_vertical,
+  compute_reverse_shift_2d_gpu<<<dim3(32,16),dim3(32,16)>>>(N_horizontal, N_vertical,
                                                             horizontal_shifts, vertical_shifts,
                                                             shift2D);
 }

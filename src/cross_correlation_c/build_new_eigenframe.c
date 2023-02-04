@@ -5,7 +5,7 @@ void build_next_eigenframe(
     state_struct *restrict state ) {
   /*
    *  Construct the next eigenframe using:
-   *   eigenframe_new = A0*new_image + B1*eigenframe_old.
+   *   eigenframe_new = A0*new_image_shifted + B1*eigenframe_old.
    *
    *  Inputs
    *  ------

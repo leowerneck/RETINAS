@@ -1,7 +1,7 @@
 #include "image_analysis.h"
 
 __global__
-void typecast_and_copy_1d_gpu(
+static void typecast_and_copy_1d_gpu(
     const int n,
     const uint16_t *restrict input_array,
     REAL *restrict real_array,

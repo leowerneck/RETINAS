@@ -9,11 +9,12 @@
 //********************************************
 // Basic definitions for module outputC:
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
-#include "string.h" // "string.h Needed for strncmp, etc.
-#include "stdint.h" // "stdint.h" Needed for Windows GCC 6.x compatibility, and for int8_t
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h> // "string.h Needed for strncmp, etc.
+#include <stdint.h> // "stdint.h" Needed for Windows GCC 6.x compatibility, and for int8_t
+#include <stdarg.h>
 
 #ifndef M_PI
 #define M_PI 3.141592653589793238462643383279502884L
@@ -120,6 +121,19 @@ typedef struct state_struct {
 } state_struct;
 
 #include "function_prototypes.h"
+
+static inline
+void info(const char *format, ...) {
+  /*
+   *  Slightly modified printf which appends the
+   *  code name to the beginning of the message.
+   */
+  printf("(RETINA) ");
+  va_list args;
+  va_start(args, format);
+  vprintf(format, args);
+  va_end(args);
+}
 
 //********************************************
 #endif // IMAGE_ANALYSIS_H_

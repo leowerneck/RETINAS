@@ -2,7 +2,7 @@
 
 // GPU kernel
 __global__
-void absolute_value_1d_gpu(
+static void absolute_value_1d_gpu(
     const int n,
     const COMPLEX *restrict z,
     REAL *restrict x ) {
@@ -19,6 +19,7 @@ void absolute_value_1d_gpu(
    *  -------
    *    Nothing.
    */
+
   const int index  = blockIdx.x * blockDim.x + threadIdx.x;
   const int stride = blockDim.x * gridDim.x;
   for(int i=index;i<n;i+=stride) {
@@ -29,7 +30,6 @@ void absolute_value_1d_gpu(
   }
 }
 
-// CPU wrapper
 extern "C" __host__
 void absolute_value_2d(
     const int m,
@@ -37,19 +37,7 @@ void absolute_value_2d(
     const COMPLEX *restrict z,
     REAL *restrict x ) {
   /*
-   *  Compute the absolute value of all elements of a
-   *  two-dimensional (flattened)  array.
-   *
-   *  Inputs
-   *  ------
-   *    m : Size of the first dimension of the array.
-   *    n : Size of the second dimension of the array.
-   *    z : Complex array of size m*n.
-   *    x : Real array of size m*n. Stores the result.
-   *
-   *  Returns
-   *  -------
-   *    Nothing.
+   *  This is the CPU wrapper to the function above.
    */
   absolute_value_1d_gpu<<<MIN(n,512),MIN(m,512)>>>(m*n, z, x);
 }

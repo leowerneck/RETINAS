@@ -1,12 +1,13 @@
 #include "image_analysis.h"
 
 __global__
-void typecast_shift_square_reciprocal_and_copy_gpu(const int n,
-                                                   const REAL shift,
-                                                   const uint16_t *input_array,
-                                                   REAL *real_array,
-                                                   COMPLEX *reciprocal_image,
-                                                   COMPLEX *squared_image) {
+void typecast_shift_square_reciprocal_and_copy_gpu(
+    const int n,
+    const REAL shift,
+    const uint16_t *input_array,
+    REAL *real_array,
+    COMPLEX *reciprocal_image,
+    COMPLEX *squared_image) {
   const int index  = blockIdx.x * blockDim.x + threadIdx.x;
   const int stride = blockDim.x * gridDim.x;
   for(int i=index;i<n;i+=stride) {
@@ -52,8 +53,9 @@ void typecast_rebin_4x4_shift_square_reciprocal_and_copy_gpu( const int N_horizo
 }
 
 extern "C" __host__
-REAL typecast_and_return_brightness( const uint16_t *restrict input_array,
-                                     CUDAstate_struct *restrict CUDAstate ) {
+REAL typecast_input_image_and_compute_brightness(
+    const uint16_t *restrict input_array,
+    CUDAstate_struct *restrict CUDAstate ) {
 
   // Step 1: Set useful constants
   const int Nh   = CUDAstate->N_horizontal;

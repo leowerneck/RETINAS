@@ -45,7 +45,7 @@
 // Precision macros
 #define SINGLE 0
 #define DOUBLE 1
-#define PRECISION SINGLE
+#define PRECISION DOUBLE
 
 // Useful macros
 #if PRECISION == SINGLE

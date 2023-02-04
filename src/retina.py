@@ -13,9 +13,12 @@ class retina:
                        self.upsample_factor,
                        self.A0,
                        self.B1)
+        self.initialized = True
 
     def finalize(self):
-        self.lib.state_finalize(self.state)
+        if self.initialized:
+            self.lib.state_finalize(self.state)
+            self.initialized = False
 
     def __init__(self, libpath, N_horizontal, N_vertical,
                  upsample_factor, time_constant, precision="single"):
@@ -44,6 +47,8 @@ class retina:
               Code precision (default "single")
         """
 
+        self.initialized = None
+
         # Step 3.a: Set C types
         if precision.lower() == "single":
             self.real     = single
@@ -68,7 +73,12 @@ class retina:
         self.libpath         = libpath
         self.precision       = precision
         self.first_image     = True
+        self.finalized       = False
         self.initialize()
+
+    def __del__(self):
+        """ Class destructor """
+        self.finalize()
 
     def compute_displacements_wrt_ref_image(self, new_image):
         """
@@ -86,8 +96,8 @@ class retina:
         """
 
         if self.first_image:
-            new_image, h_0, v_0 = \
-                center_array_max_return_displacements(new_image, real=self.real)
+            # new_image, h_0, v_0 = \
+                # center_array_max_return_displacements(new_image, real=self.real)
 
             brightness = self.lib.typecast_input_image_and_compute_brightness(
                 cast(new_image.ctypes.data, self.c_uint16_p), self.state)
@@ -95,7 +105,7 @@ class retina:
             self.lib.set_zeroth_eigenframe(self.state)
             self.first_image = False
 
-            return array([h_0, v_0])
+            return array([0,0]) #array([h_0, v_0])
 
         brightness = self.lib.typecast_input_image_and_compute_brightness(
             cast(new_image.ctypes.data, self.c_uint16_p), self.state)

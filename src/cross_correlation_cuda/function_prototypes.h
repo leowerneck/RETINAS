@@ -41,12 +41,53 @@ void upsample_and_compute_subpixel_displacements(
     state_struct *restrict state,
     REAL *restrict displacements );
 
+// This function is implemented in build_next_eigenframe.cu
+__host__
+void build_next_eigenframe(
+    const REAL *restrict displacements,
+    state_struct *restrict state );
+
+// This function is implemented in compute_reverse_shift_matrix.cu
+__host__
+void compute_reverse_shift_matrix(
+    const int N_horizontal,
+    const int N_vertical,
+    const REAL *restrict displacements,
+    COMPLEX *restrict horizontal_shifts,
+    COMPLEX *restrict vertical_shifts,
+    COMPLEX *restrict shift2D );
+
+// This function is implemented in compute_displacements_and_build_next_eigenframe.cu
+__host__
+void compute_displacements_and_build_next_eigenframe(
+    state_struct *restrict state,
+    REAL *restrict displacements );
+
+// This function is implemented in compute_kernels.cu
+__host__
+void compute_horizontal_kernel(
+    const REAL *restrict sample_region_offset,
+    state_struct *restrict state );
+
+// This function is implemented in compute_kernels.cu
+__host__
+void compute_vertical_kernel(
+    const REAL *restrict sample_region_offset,
+    state_struct *restrict state );
+
 // This function is implemented in absolute_value_2d.cu
 __host__
 void absolute_value_2d(
     const int m,
     const int n,
     const COMPLEX *restrict z,
+    REAL *restrict x );
+
+// This function is implemented in find_maxima.cu
+__host__
+int find_maxima(
+    cublasHandle_t h,
+    const int n,
     REAL *restrict x );
 
 // This function is implemented in complex_conjugate_2d.cu
@@ -75,19 +116,6 @@ COMPLEX CEXP(COMPLEX z) {
   REAL b    = z.y; // Imag part of z
   REAL expa = EXP(a);
   return MAKE_COMPLEX(expa*COS(b),expa*SIN(b));
-}
-
-static inline
-void info(const char *format, ...) {
-  /*
-   *  Slightly modified printf which appends the
-   *  code name to the beginning of the message.
-   */
-  printf("(RETINA) ");
-  va_list args;
-  va_start(args, format);
-  vprintf(format, args);
-  va_end(args);
 }
 
 #ifdef __cplusplus
