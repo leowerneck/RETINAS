@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from retina import retina
 from numpy import zeros, uint16, fabs, sum
 from numpy.random import random
@@ -15,17 +16,17 @@ def rel_err(a, b):
 def abs_err(a, b):
     return fabs(a-b)
 
-libpath         = os.path.join("..", "lib", "libretina_c.so")
+libpath         = os.path.join("..", "lib", "libretina_cuda.so")
 N_horizontal    = 256
 N_vertical      = 128
-upsample_factor = 1000
+upsample_factor = 100
 time_constant   = 10
-tol             = 10.0/upsample_factor
 spread_factor   = 0.95
 
 r = retina(libpath, N_horizontal, N_vertical, upsample_factor, time_constant, precision="double")
 
-N_images = 1000
+start = time.time()
+N_images = 1000000
 with open("displacements.txt", "w") as file:
     dh = 0
     dv = 0
@@ -44,6 +45,8 @@ with open("displacements.txt", "w") as file:
         dv_rel_err = rel_err(displacements[1], dv)
         file.write("%.15e %.15e %.15e %.15e\n"%(
             dh, dv, displacements[0], displacements[1]))
-        print(f"(RETINA) Finished processing image {i:04d} of {N_images:04d}.")
+        print(f"(RETINA) Finished processing image {i:05d} of {N_images:05d}")
 
 r.finalize()
+end = time.time()
+print(f"Finished processing {N_images} images of size {N_horizontal} x {N_vertical} in {end-start} seconds")
