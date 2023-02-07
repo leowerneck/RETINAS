@@ -70,6 +70,8 @@
 #  define FFTW_EXECUTE_DFT fftwf_execute_dft
 #  define FFTW_CLEANUP fftwf_cleanup
 #  define CBLAS_GEMM cblas_cgemm
+#  define CBLAS_IAMAX_REAL cblas_isamax
+#  define CBLAS_IAMAX_COMPLEX cblas_icamax
 #else
 #  define REAL double
 #  define ROUND round
@@ -92,6 +94,8 @@
 #  define FFTW_EXECUTE_DFT fftw_execute_dft
 #  define FFTW_CLEANUP fftw_cleanup
 #  define CBLAS_GEMM cblas_zgemm
+#  define CBLAS_IAMAX_REAL cblas_idamax
+#  define CBLAS_IAMAX_COMPLEX cblas_izamax
 #endif
 
 // Image analysis parameter struct

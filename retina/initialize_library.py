@@ -6,28 +6,28 @@ from numpy import single, double
 # Step 2: Helper function to setup the C function interface
 def setup_func(func, params, returns):
     """
-      Setup the C functions
+    Setup the C functions
 
-      Inputs
-      ------
-        func : ctypes._FuncPtr
-          Pointer to a C function.
+    Inputs
+    ------
+      func : ctypes._FuncPtr
+        Pointer to a C function.
 
-        params : list of _ctypes.PyCSimpleType
-          List of C types for function parameters.
+      params : list of _ctypes.PyCSimpleType
+        List of C types for function parameters.
 
-        returns : _ctypes.PyCSimpleType or None
-          Return value of the C function.
+      returns : _ctypes.PyCSimpleType or None
+        Return value of the C function.
 
-      Returns
-      -------
-        Nothing.
+    Returns
+    -------
+      Nothing.
 
-      Raises
-      ------
-        TypeError : If params have the wrong type.
-        TypeError : If any param in params have the wrong type.
-        TypeError : If returns have the wrong type.
+    Raises
+    ------
+      TypeError : If params have the wrong type.
+      TypeError : If any param in params have the wrong type.
+      TypeError : If returns have the wrong type.
     """
 
     # Step 2.a: Check inputs have the correct types
@@ -48,27 +48,27 @@ def setup_func(func, params, returns):
 # Step 3: The initialize library function
 def initialize_library(libpath, real=float, c_real=c_float):
     """
-      Initialize the library.
+    Initialize the library.
 
-      Inputs
-      ------
-        libpath : str
-          Path to the library.
+    Inputs
+    ------
+      libpath : str
+        Path to the library.
 
-        real : type
-          Type of float to use (default is float).
+      real : type
+        Type of float to use (default is float).
 
-        c_real : ctype
-          Type of C float to use (default is c_float).
+      c_real : ctype
+        Type of C float to use (default is c_float).
 
-      Returns
-      -------
-        lib : ctypes.CDLL
-          Library interface file, fully initialized.
+    Returns
+    -------
+      lib : ctypes.CDLL
+        Library interface file, fully initialized.
 
-      Raises
-      ------
-        ValueError : If precision has an unsupported value.
+    Raises
+    ------
+      ValueError : If precision has an unsupported value.
     """
     # Step 3.a: Set C types
     c_uint16_p = POINTER(c_uint16)

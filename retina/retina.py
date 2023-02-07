@@ -23,28 +23,28 @@ class retina:
     def __init__(self, libpath, N_horizontal, N_vertical,
                  upsample_factor, time_constant, precision="single"):
         """
-          Class constructor
+        Class constructor
 
-          Inputs
-          ------
-            libpath : str
-              Path to the library
+        Inputs
+        ------
+          libpath : str
+            Path to the library
 
-            N_horizontal : int
-              Number of horizontal pixels in the images.
+          N_horizontal : int
+            Number of horizontal pixels in the images.
 
-            N_vertical : int
-              Number of vertical pixels in the images.
+          N_vertical : int
+            Number of vertical pixels in the images.
 
-            upsample_factot : float
-              Upsampling factor.
+          upsample_factot : float
+            Upsampling factor.
 
-            time_constant : float
-              Time constant for IIR filter, used to calculate decay
-              constant (x) and recursion coeffs (A0, B1)
+          time_constant : float
+            Time constant for IIR filter, used to calculate decay
+            constant (x) and recursion coeffs (A0, B1)
 
-            precision : str
-              Code precision (default "single")
+          precision : str
+            Code precision (default "single")
         """
 
         self.initialized = None
@@ -82,17 +82,17 @@ class retina:
 
     def compute_displacements_wrt_ref_image(self, new_image):
         """
-          Compute the displacements with respect to the reference image.
+        Compute the displacements with respect to the reference image.
 
-          Inputs
-          ------
-            new_image : NumPy array
-              NumPy array containing the new image.
+        Inputs
+        ------
+          new_image : NumPy array
+            NumPy array containing the new image.
 
-          Returns
-          -------
-            displacements : NumPy array
-              NumPy array containing the displacements.
+        Returns
+        -------
+          displacements : NumPy array
+            NumPy array containing the displacements.
         """
 
         if self.first_image:
@@ -118,17 +118,17 @@ class retina:
 
     def compute_displacements_wrt_ref_image_and_build_next_eigenframe(self, new_image):
         """
-          Compute the displacements with respect to the reference image.
+        Compute the displacements with respect to the reference image.
 
-          Inputs
-          ------
-            new_image : NumPy array
-              NumPy array containing the new image.
+        Inputs
+        ------
+          new_image : NumPy array
+            NumPy array containing the new image.
 
-          Returns
-          -------
-            displacements : NumPy array
-              NumPy array containing the displacements.
+        Returns
+        -------
+          displacements : NumPy array
+            NumPy array containing the displacements.
         """
 
         if self.first_image:
