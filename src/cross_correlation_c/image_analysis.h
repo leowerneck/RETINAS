@@ -163,6 +163,11 @@ void compute_displacements_and_build_next_eigenframe(
     state_struct *restrict state,
     REAL *restrict displacements );
 
+// This function is implemented in get_eigenframe.c
+void get_eigenframe(
+    state_struct *restrict state,
+    REAL *restrict eigenframe );
+
 static inline
 void info(const char *format, ...) {
   /*

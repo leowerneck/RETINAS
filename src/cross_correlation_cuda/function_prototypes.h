@@ -113,6 +113,12 @@ void element_wise_multiplication_conj_2d(
     const COMPLEX *restrict B,
     COMPLEX *restrict C );
 
+// This function is implemented in get_eigenframe.cu
+__host__
+void get_eigenframe(
+    state_struct *restrict state,
+    REAL *restrict eigenframe_time );
+
 // Inline function to compute the exponential of a complex number
 __host__ __device__
 static inline
