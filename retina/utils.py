@@ -1,5 +1,47 @@
 from numpy import unravel_index, argmax, rint, roll, mgrid, sqrt, exp, ones, zeros
 from numpy.random import poisson
+from ctypes import c_int, POINTER
+
+def setup_func(func, params, returns):
+    """
+    Setup the C functions
+
+    Inputs
+    ------
+      func : ctypes._FuncPtr
+        Pointer to a C function.
+
+      params : list of _ctypes.PyCSimpleType
+        List of C types for function parameters.
+
+      returns : _ctypes.PyCSimpleType or None
+        Return value of the C function.
+
+    Returns
+    -------
+      Nothing.
+
+    Raises
+    ------
+      TypeError : If params have the wrong type.
+      TypeError : If any param in params have the wrong type.
+      TypeError : If returns have the wrong type.
+    """
+
+    # Step 2.a: Check inputs have the correct types
+    Ctype    = type(c_int)
+    Cptrtype = type(POINTER(c_int))
+    if not isinstance(params, list):
+        raise TypeError(f'params must be of type list, but got {type(params)} instead.')
+    for param in params:
+        if not isinstance(param, Ctype) and not isinstance(param, Cptrtype):
+            raise TypeError(f'params must be a list of C types, but found {type(param)}.')
+    if not isinstance(returns, Ctype) and returns is not None:
+        raise TypeError(f'returns must be a C type or None, but got {type(returns)} instead.')
+
+    # Step 2.b: Setup the types of function parameters and return value
+    func.argtypes = params
+    func.restype  = returns
 
 def center_array_max_return_displacements(image_array, real=float):
     """ Fast recentering of an image array around the maximum pixel """

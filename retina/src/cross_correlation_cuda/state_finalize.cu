@@ -38,5 +38,5 @@ void state_finalize( state_struct *restrict state ) {
   // Step 5: Free memory allocated for the state struct
   free(state);
 
-  info("Successfully finalized CUDA state object\n");
+  info("Successfully finalized state object\n");
 }

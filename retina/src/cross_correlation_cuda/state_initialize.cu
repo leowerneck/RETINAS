@@ -27,15 +27,15 @@ state_struct *state_initialize(
    *    state           : The state object, fully initialized.
    */
 
-  info("Initializing state object.\n");
-  info("  Parameters:\n");
-  info("    N_horizontal    = %d\n", N_horizontal);
-  info("    N_vertical      = %d\n", N_vertical);
-  info("    upsample_factor = %g\n", upsample_factor);
-  info("    A0              = %g\n", A0);
-  info("    B1              = %g\n", B1);
+  info("Initializing state object\n");
+  info("    Input parameters:\n");
+  info("        N_horizontal    = %d\n", N_horizontal);
+  info("        N_vertical      = %d\n", N_vertical);
+  info("        upsample_factor = %g\n", upsample_factor);
+  info("        A0              = %g\n", A0);
+  info("        B1              = %g\n", B1);
   if(shift >= 0)
-    info("    shift           = %g\n", shift);
+    info("        shift           = %g\n", shift);
 
   // Step 1: Allocate memory for the parameter struct
   state_struct *state = (state_struct *)malloc(sizeof(state_struct));
