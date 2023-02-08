@@ -31,10 +31,9 @@ void get_subpixel_displacement_by_upsampling(CUDAstate_struct *restrict CUDAstat
   //       any purpose
 
   // Step 1: Set basic variables
-  const int Nh   = CUDAstate->N_horizontal;
-  const int Nv   = CUDAstate->N_vertical;
-  const int NhNv = Nh*Nv;
-  const REAL upsample_factor = CUDAstate->upsample_factor;
+  const int Nh   = state->N_horizontal;
+  const int Nv   = state->N_vertical;
+  const REAL upsample_factor = state->upsample_factor;
 
   // Step 2: Adjust the displacement based on the upsample factor
   for(int i=0;i<2;i++) displacement[i] = ROUND(displacement[i] * upsample_factor)/upsample_factor;
@@ -54,27 +53,27 @@ void get_subpixel_displacement_by_upsampling(CUDAstate_struct *restrict CUDAstat
   const int SS = S*S;
 
   // Step 7: Compute the horizontal kernel
-  compute_horizontal_kernel(sample_region_offset, CUDAstate);
+  compute_horizontal_kernel(sample_region_offset, state);
 
   // Step 8: Contract the horizontal kernel with the conjugate of the image product
-  complex_conjugate(Nh,Nv,NhNv,CUDAstate->aux_array1);
+  complex_conjugate(Nh,Nv,NhNv,state->aux_array1);
   // Note: aux_array1 contains the complex conjugate of the image product,
   //       aux_array2 contains the horizontal kernel, and
   //       aux_array3 will contain the matrix product of aux_array2 and aux_array1.
-  complex_matrix_multiply(CUDAstate->cublasHandle,S,Nh,Nv,CUDAstate->aux_array2,CUDAstate->aux_array1,CUDAstate->aux_array3);
+  complex_matrix_multiply(state->cublasHandle,S,Nh,Nv,state->aux_array2,state->aux_array1,state->aux_array3);
 
   // Step 9: Compute the vertical kernel
-  compute_vertical_kernel(sample_region_offset, CUDAstate);
+  compute_vertical_kernel(sample_region_offset, state);
 
   // Step 10: Now contract the result of Step 8 with the vertical kernel to get the upsampled image
   // Note: aux_array1 will contains the upsampled image,
   //       aux_array2 contains the vertical kernel, and
   //       aux_array3 is the same as in Step 8.
-  complex_matrix_multiply_tt(CUDAstate->cublasHandle,S,Nv,S,CUDAstate->aux_array3,CUDAstate->aux_array2,CUDAstate->aux_array1);
+  complex_matrix_multiply_tt(state->cublasHandle,S,Nv,S,state->aux_array3,state->aux_array2,state->aux_array1);
 
   // Step 10: Get maximum of upsampled image
-  compute_absolute_value(S, S, SS, CUDAstate->aux_array1, CUDAstate->aux_array_real);
-  const int idx_min = find_minima(CUDAstate->cublasHandle, SS, CUDAstate->aux_array_real);
+  compute_absolute_value(S, S, SS, state->aux_array1, state->aux_array_real);
+  const int idx_min = find_minima(state->cublasHandle, SS, state->aux_array_real);
   const int i_min   = idx_min/S;
   const int j_min   = idx_min - i_min*S;
 

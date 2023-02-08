@@ -26,7 +26,7 @@ spread_factor   = 0.95
 r = retina(libpath, N_horizontal, N_vertical, upsample_factor, time_constant, precision="double")
 
 start = time.time()
-N_images = 1000000
+N_images = 10
 with open("displacements.txt", "w") as file:
     dh = 0
     dv = 0

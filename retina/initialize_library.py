@@ -46,7 +46,7 @@ def setup_func(func, params, returns):
     func.restype  = returns
 
 # Step 3: The initialize library function
-def initialize_library(libpath, real=float, c_real=c_float):
+def initialize_library(libpath, real=float, c_real=c_float, shot_noise=False):
     """
     Initialize the library.
 
@@ -85,7 +85,7 @@ def initialize_library(libpath, real=float, c_real=c_float):
     #     const REAL upsample_factor,
     #     const REAL A0,
     #     const REAL B1 );
-    setup_func(lib.state_initialize, [c_int, c_int, c_real, c_real, c_real], c_void_p)
+    setup_func(lib.state_initialize, [c_int, c_int, c_real, c_real, c_real, c_real], c_void_p)
 
     # Step 3.c.2: The state_finalize function
     # void state_finalize( state_struct *restrict state );
@@ -95,45 +95,64 @@ def initialize_library(libpath, real=float, c_real=c_float):
     # REAL typecast_input_image_and_compute_brightness(
     #     const uint16_t *restrict input_array,
     #     state_struct *restrict state );
-    setup_func(lib.typecast_input_image_and_compute_brightness,
-               [c_uint16_p, c_void_p], c_real)
+    if shot_noise:
+        setup_func(lib.typecast_input_image_and_compute_brightness_shot_noise,
+                   [c_uint16_p, c_void_p], c_real)
+    else:
+        setup_func(lib.typecast_input_image_and_compute_brightness,
+                   [c_uint16_p, c_void_p], c_real)
 
-    # Step 3.c.4: The typecast_input_image_rebin_4x4_and_compute_brightness function
-    # REAL typecast_input_image_rebin_4x4_and_compute_brightness(
-    #     const uint16_t *restrict input_array,
-    #     state_struct *restrict state );
-    setup_func(lib.typecast_input_image_and_compute_brightness,
-               [c_uint16_p, c_void_p], c_real)
-
-    # Step 3.c.5: The set_zeroth_eigenframe function
+    # Step 3.c.4: The set_zeroth_eigenframe function
     # void set_zeroth_eigenframe( state_struct *restrict state );
     setup_func(lib.set_zeroth_eigenframe, [c_void_p], None)
 
-    # Step 3.c.6: The cross_correlate_and_compute_displacements function
-    # void cross_correlate_and_compute_displacements(
+    # Step 3.c.5: The cross_correlate_ref_and_new_images function
+    # void cross_correlate_ref_and_new_images(state_struct *restrict state);
+    setup_func(lib.cross_correlate_ref_and_new_images, [c_void_p], None)
+
+    # Step 3.c.6: The displacements_full_pixel_estimate function
+    # void displacements_full_pixel_estimate(
     #     state_struct *restrict state,
     #     REAL *restrict displacements );
-    setup_func(lib.cross_correlate_and_compute_displacements,
-               [c_void_p, c_real_p], None)
+    if shot_noise:
+        setup_func(lib.displacements_full_pixel_estimate_shot_noise,
+                   [c_void_p, c_real_p], None)
+    else:
+        setup_func(lib.displacements_full_pixel_estimate,
+                   [c_void_p, c_real_p], None)
 
-    # Step 3.c.7: The upsample_and_compute_subpixel_displacements function
-    # void upsample_and_compute_subpixel_displacements(
+    # Step 3.c.7: The displacements_sub_pixel_estimate function
+    # void displacements_sub_pixel_estimate(
     #     state_struct *restrict state,
     #     REAL *restrict displacements );
-    setup_func(lib.upsample_and_compute_subpixel_displacements,
-               [c_void_p, c_real_p], None)
+    if shot_noise:
+        setup_func(lib.displacements_sub_pixel_estimate_shot_noise,
+                   [c_void_p, c_real_p], None)
+    else:
+        setup_func(lib.displacements_sub_pixel_estimate,
+                   [c_void_p, c_real_p], None)
 
-    # Step 3.c.8: The build_next_eigenframe function
+    # Step 3.c.8: The upsample_and_compute_subpixel_displacements function
+    # void upsample_around_displacements(
+    #     state_struct *restrict state,
+    #     REAL *restrict displacements );
+    setup_func(lib.upsample_around_displacements, [c_void_p, c_real_p], None)
+
+    # Step 3.c.9: The build_next_eigenframe function
     # void build_next_eigenframe(
     #     const REAL *restrict displacements,
     #     state_struct *restrict state );
     setup_func(lib.build_next_eigenframe, [c_real_p, c_void_p], None)
 
-    # Step 3.c.8: The compute_displacements_and_build_next_eigenframe function
+    # Step 3.c.10: The compute_displacements_and_build_next_eigenframe function
     # void compute_displacements_and_build_next_eigenframe(
     #     state_struct *restrict state,
     #     REAL *restrict displacements );
-    setup_func(lib.compute_displacements_and_build_next_eigenframe,
-               [c_void_p, c_real_p], None)
+    if shot_noise:
+        setup_func(lib.compute_displacements_and_build_next_eigenframe_shot_noise,
+                   [c_void_p, c_real_p], None)
+    else:
+        setup_func(lib.compute_displacements_and_build_next_eigenframe,
+                   [c_void_p, c_real_p], None)
 
     return lib
