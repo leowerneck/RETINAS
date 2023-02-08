@@ -109,16 +109,17 @@
 typedef struct state_struct {
   bool eigenshot;
   int N_horizontal, N_vertical;
-  REAL upsample_factor, A0, B1;
+  REAL upsample_factor, A0, B1, shift;
   uint16_t *aux_array_int;         // GPU (device)
   REAL *aux_array_real;            // GPU (device)
   COMPLEX *host_aux_array;         // CPU (host)
   COMPLEX *aux_array1;             // GPU (device)
   COMPLEX *aux_array2;             // GPU (device)
   COMPLEX *aux_array3;             // GPU (device)
-  COMPLEX *new_image_time_domain;  // GPU (device)
-  COMPLEX *new_image_freq_domain;  // GPU (device)
-  COMPLEX *eigenframe_freq_domain; // GPU (device)
+  COMPLEX *new_image_time;         // GPU (device)
+  COMPLEX *new_image_freq;         // GPU (device)
+  COMPLEX *new_image_time_squared; // GPU (device)
+  COMPLEX *eigenframe_freq;        // GPU (device)
   FFT_PLAN fft2_plan;
   cublasHandle_t cublasHandle;
 } state_struct;
@@ -136,6 +137,26 @@ void info(const char *format, ...) {
   va_start(args, format);
   vprintf(format, args);
   va_end(args);
+}
+
+static inline
+int round_towards_zero(const REAL x) {
+  /*
+   *  Rounds a number to the nearest integer towards zero.
+   *
+   *  Inputs
+   *  ------
+   *    x : Number to be rounded.
+   *
+   *  Returns
+   *  -------
+   *    y : Number rounded towards zero.
+   */
+
+  if( x > 0.0 )
+    return FLOOR(x);
+  else
+    return CEIL(x);
 }
 
 //********************************************

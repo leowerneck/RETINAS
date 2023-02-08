@@ -19,7 +19,7 @@ void get_eigenframe(
 
   // Step 1: Compute the inverse FFT of the current eigenframe.
   FFT_EXECUTE_DFT(state->fft2_plan,
-                  state->eigenframe_freq_domain,
+                  state->eigenframe_freq,
                   state->aux_array1,
                   CUFFT_INVERSE);
 

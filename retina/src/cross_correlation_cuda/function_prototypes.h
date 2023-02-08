@@ -13,15 +13,22 @@ state_struct *state_initialize(
     const int N_vertical,
     const REAL upsample_factor,
     const REAL A0,
-    const REAL B1 );
+    const REAL B1,
+    const REAL shift );
 
 // This function is implemented in state_finalize.cu
 __host__
 void state_finalize( state_struct *restrict state );
 
-// This function is implemented in typecast_and_return_brightness.cu
+// This function is implemented in typecast_input_image_and_compute_brightness.cu
 __host__
 REAL typecast_input_image_and_compute_brightness(
+    const uint16_t *restrict input_array,
+    state_struct *restrict state );
+
+// This function is implemented in typecast_input_image_and_compute_brightness_shot_noise.cu
+__host__
+REAL typecast_input_image_and_compute_brightness_shot_noise(
     const uint16_t *restrict input_array,
     state_struct *restrict state );
 
@@ -29,15 +36,37 @@ REAL typecast_input_image_and_compute_brightness(
 __host__
 void set_zeroth_eigenframe( state_struct *restrict state );
 
-// This function is implemented in cross_correlate_and_compute_displacements.cu
+// This function is implemented in cross_correlate_ref_and_new_images.cu
 __host__
-void cross_correlate_and_compute_displacements(
+void cross_correlate_ref_and_new_images( state_struct *restrict state );
+
+// This function is implemented in displacements_full_pixel_estimate.cu
+__host__
+void displacements_full_pixel_estimate(
     state_struct *restrict state,
     REAL *restrict displacements );
 
-// This function is implemented in upsample_and_compute_subpixel_displacements.cu
+// This function is implemented in displacements_full_pixel_estimate_shot_noise.cu
 __host__
-void upsample_and_compute_subpixel_displacements(
+void displacements_full_pixel_estimate_shot_noise(
+    state_struct *restrict state,
+    REAL *restrict displacements );
+
+// This function is implemented in upsample_around_displacements.cu
+__host__
+void upsample_around_displacements(
+    state_struct *restrict state,
+    REAL *restrict displacements );
+
+// This function is implemented in displacements_sub_pixel_estimate.cu
+__host__
+void displacements_sub_pixel_estimate(
+    state_struct *restrict state,
+    REAL *restrict displacements );
+
+// This function is implemented in displacements_sub_pixel_estimate_shot_noise.cu
+__host__
+void displacements_sub_pixel_estimate_shot_noise(
     state_struct *restrict state,
     REAL *restrict displacements );
 

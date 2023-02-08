@@ -65,6 +65,6 @@ void build_next_eigenframe(
 
   // Step 2: Now shift the new image and add it to the eigenframe
   shift_image_add_to_eigenframe_gpu<<<MIN(Nv,512),MIN(Nh,512)>>>(
-    Nh, Nv, state->A0, state->B1, state->new_image_freq_domain,
-    state->aux_array3, state->eigenframe_freq_domain);
+    Nh, Nv, state->A0, state->B1, state->new_image_freq,
+    state->aux_array3, state->eigenframe_freq);
 }

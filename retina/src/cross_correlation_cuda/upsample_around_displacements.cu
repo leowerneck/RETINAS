@@ -1,25 +1,5 @@
 #include "image_analysis.h"
 
-static inline
-int round_towards_zero(const REAL x) {
-  /*
-   *  Rounds a number to the nearest integer towards zero.
-   *
-   *  Inputs
-   *  ------
-   *    x : Number to be rounded.
-   *
-   *  Returns
-   *  -------
-   *    y : Number rounded towards zero.
-   */
-
-  if( x > 0.0 )
-    return FLOOR(x);
-  else
-    return CEIL(x);
-}
-
 __host__ static inline
 void complex_matrix_multiply(
     cublasHandle_t h,
@@ -89,7 +69,7 @@ void complex_matrix_multiply_tt(
 }
 
 extern "C" __host__
-void upsample_and_compute_subpixel_displacements(
+void upsample_around_displacements(
     state_struct *restrict state,
     REAL *restrict displacements ) {
   /*
@@ -129,7 +109,6 @@ void upsample_and_compute_subpixel_displacements(
 
   // Step 6: Upsampled size
   const int S  = (int)upsampled_region_size;
-  const int SS = S*S;
 
   // Step 7: Compute the horizontal kernel
   compute_horizontal_kernel(sample_region_offset, state);
@@ -149,14 +128,4 @@ void upsample_and_compute_subpixel_displacements(
   //       aux_array2 contains the vertical kernel, and
   //       aux_array3 is the same as in Step 8.
   complex_matrix_multiply_tt(state->cublasHandle,S,Nv,S,state->aux_array3,state->aux_array2,state->aux_array1);
-
-  // Step 10: Get maximum of upsampled image
-  absolute_value_2d(S, S, state->aux_array1, state->aux_array_real);
-  const int idx_max = find_maxima(state->cublasHandle,SS,state->aux_array_real);
-  const int i_max   = idx_max/S;
-  const int j_max   = idx_max - i_max*S;
-
-  // Step 11: Update the displacements
-  displacements[0] += ((REAL)i_max - dftshift)/upsample_factor;
-  displacements[1] += ((REAL)j_max - dftshift)/upsample_factor;
 }

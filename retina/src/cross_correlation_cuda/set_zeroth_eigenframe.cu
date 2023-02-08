@@ -14,10 +14,10 @@ void set_zeroth_eigenframe( state_struct *restrict state ) {
    *     Nothing.
    */
 
-  // Step 1: Compute FFT of the new_image_time_domain and
+  // Step 1: Compute FFT of the new_image_time and
   //         store it as the zeroth eigenframe.
   FFT_EXECUTE_DFT(state->fft2_plan,
-                  state->new_image_time_domain,
-                  state->eigenframe_freq_domain,
+                  state->new_image_time,
+                  state->eigenframe_freq,
                   CUFFT_FORWARD);
 }

@@ -2,7 +2,7 @@
 LIBNAME = libretina_cuda.so
 
 # Library directory path
-LIB_DIR = ../../lib
+LIB_DIR = ../../../lib
 
 # Specify the CUDA and C++ compilers
 NVCC = /usr/local/cuda-11.7/bin/nvcc
@@ -22,10 +22,10 @@ SRC := $(wildcard *.cu)
 INC := $(wildcard *.h)
 
 # Target library name
-LIB     = ../../lib/$(LIBNAME)
+LIB     = $(LIB_DIR)/$(LIBNAME)
 
 SRC_DIR := $(notdir $(shell pwd))
-OBJ_DIR := $(addprefix ../../build/, $(SRC_DIR))
+OBJ_DIR := $(addprefix ../../../build/, $(SRC_DIR))
 
 # Get every file defined in SRC and replace '.cu' by '.o'
 OBJ := $(addprefix $(OBJ_DIR)/, $(SRC:.cu=.o))
