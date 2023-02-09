@@ -1,7 +1,7 @@
 from os.path import join as pjoin
 from time import time
 from retina import retina
-from numpy import uint16, loadtxt
+from numpy import uint16, fromfile
 from utils import generate_synthetic_image_data_set
 
 def rel_err(a, b):
@@ -19,24 +19,28 @@ N_horizontal    = 256
 N_vertical      = 128
 upsample_factor = 100
 time_constant   = 10
+offset          = 10
+A               = 10700
+w               = 16
 spread_factor   = 0.95
 outdir          = "out"
-imdir           = pjoin(outdir, "images")
-N_images        = 100
-generate_synthetic_image_data_set(outdir, N_images, N_horizontal, N_vertical)
+N_images        = 1000
+imdir = generate_synthetic_image_data_set(outdir, N_images, N_horizontal, N_vertical,
+                                          A=A, w=w, offset=offset, spread_factor=0.95)
 
 r = retina(libpath, N_horizontal, N_vertical, upsample_factor, time_constant, precision="double")
 print("(RETINA) Beginning image processing")
 start = time()
 with open(pjoin(outdir, "results.txt"), "w") as file:
-    im = loadtxt(pjoin(imdir, "image_01.txt"), dtype=uint16)
+    im = fromfile(pjoin(imdir, "image_01.bin"), dtype=uint16).reshape(N_vertical,N_horizontal)
     displacements = r.compute_displacements_wrt_ref_image_and_build_next_eigenframe(im)
     file.write(f"{displacements[0]:.15e} {displacements[1]:.15e}\n")
     for i in range(1,N_images+1):
-        im = loadtxt(pjoin(imdir, f"image_{i+1:02d}.txt"), dtype=uint16)
+        im = fromfile(pjoin(imdir, f"image_{i+1:02d}.bin"), dtype=uint16).reshape(N_vertical,N_horizontal)
         displacements = r.compute_displacements_wrt_ref_image_and_build_next_eigenframe(im)
         file.write(f"{displacements[0]:.15e} {displacements[1]:.15e}\n")
-        print(f"(RETINA) Finished processing image {i:05d} of {N_images:05d}")
+        if not i%(N_images/5):
+            print(f"(RETINA) Finished processing image {i:05d} of {N_images:05d}")
 
 r.finalize()
 end = time()
