@@ -1,5 +1,5 @@
 from numpy import exp, array, single, double
-from ctypes import c_int, c_float, c_double, c_uint16,
+from ctypes import c_int, c_float, c_double, c_uint16
 from ctypes import c_void_p, POINTER, cast, CDLL
 
 from utils import setup_library_function

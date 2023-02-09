@@ -2,7 +2,7 @@ from numpy import unravel_index, argmax, rint, roll, mgrid, sqrt, exp, ones, zer
 from numpy.random import poisson
 from ctypes import c_int, POINTER
 
-def setup_func(func, params, returns):
+def setup_library_function(func, params, returns):
     """
     Setup the C functions
 
