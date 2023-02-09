@@ -26,7 +26,7 @@ void state_finalize( state_struct *restrict state ) {
   cudaFree(state->aux_array3);
   cudaFree(state->new_image_time);
   cudaFree(state->new_image_freq);
-  cudaFree(state->new_image_time_squared);
+  cudaFree(state->reciprocal_new_image_time);
   cudaFree(state->eigenframe_freq);
 
   // Step 3: Destroy FFT plans

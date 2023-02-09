@@ -110,16 +110,16 @@ typedef struct state_struct {
   bool eigenshot;
   int N_horizontal, N_vertical;
   REAL upsample_factor, A0, B1, shift;
-  uint16_t *aux_array_int;         // GPU (device)
-  REAL *aux_array_real;            // GPU (device)
-  COMPLEX *host_aux_array;         // CPU (host)
-  COMPLEX *aux_array1;             // GPU (device)
-  COMPLEX *aux_array2;             // GPU (device)
-  COMPLEX *aux_array3;             // GPU (device)
-  COMPLEX *new_image_time;         // GPU (device)
-  COMPLEX *new_image_freq;         // GPU (device)
-  COMPLEX *new_image_time_squared; // GPU (device)
-  COMPLEX *eigenframe_freq;        // GPU (device)
+  uint16_t *aux_array_int;            // GPU (device)
+  REAL *aux_array_real;               // GPU (device)
+  COMPLEX *host_aux_array;            // CPU (host)
+  COMPLEX *aux_array1;                // GPU (device)
+  COMPLEX *aux_array2;                // GPU (device)
+  COMPLEX *aux_array3;                // GPU (device)
+  COMPLEX *new_image_time;            // GPU (device)
+  COMPLEX *new_image_freq;            // GPU (device)
+  COMPLEX *reciprocal_new_image_time; // GPU (device)
+  COMPLEX *eigenframe_freq;           // GPU (device)
   FFT_PLAN fft2_plan;
   cublasHandle_t cublasHandle;
 } state_struct;

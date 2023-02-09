@@ -64,6 +64,9 @@ void build_next_eigenframe(
                                state->aux_array3);
 
   // Step 2: Now shift the new image and add it to the eigenframe
+  // Note: in the shot noise method, the following identification is made:
+  //   state->new_image_freq  == state->reciprocal_new_image_freq
+  //   state->eigenframe_freq == state->reciprocal_eigenframe_freq
   shift_image_add_to_eigenframe_gpu<<<MIN(Nv,512),MIN(Nh,512)>>>(
     Nh, Nv, state->A0, state->B1, state->new_image_freq,
     state->aux_array3, state->eigenframe_freq);

@@ -184,6 +184,8 @@ class retina:
             when the shot noise method is enabled (default=0).
         """
 
+        self.initialized = False
+
         # Step 3.a: Set C types
         if precision.lower() == "single":
             self.real     = single
@@ -222,9 +224,6 @@ class retina:
                        self.A0,
                        self.B1,
                        self.shift)
-
-        # All done!
-        self.initialized = True
 
     def __del__(self):
         """ Class destructor """

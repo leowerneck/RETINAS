@@ -83,8 +83,8 @@ REAL typecast_input_image_and_compute_brightness_shot_noise(
       state->shift,
       state->aux_array_int,
       state->aux_array_real,
-      state->new_image_time,
-      state->new_image_time_squared );
+      state->reciprocal_new_image_time,
+      state->new_image_time );
 
   // Step 4: Compute the brightness
   REAL brightness;

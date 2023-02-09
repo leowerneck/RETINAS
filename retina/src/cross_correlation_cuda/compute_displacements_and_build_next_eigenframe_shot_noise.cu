@@ -32,7 +32,7 @@ void compute_displacements_and_build_next_eigenframe_shot_noise(
   // Step 4: Before building the next eigenframe we must compute
   //         the FFT of the reciprocal of the new image
   FFT_EXECUTE_DFT(state->fft2_plan,
-                  state->new_image_time,
+                  state->reciprocal_new_image_time,
                   state->new_image_freq,
                   CUFFT_FORWARD);
 

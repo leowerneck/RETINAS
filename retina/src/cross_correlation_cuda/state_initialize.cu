@@ -67,7 +67,7 @@ state_struct *state_initialize(
   // Step 5.b: Arrays that hold the images
   cudaMalloc(&state->new_image_time , sizeof(COMPLEX)*NhNv);
   cudaMalloc(&state->new_image_freq , sizeof(COMPLEX)*NhNv);
-  cudaMalloc(&state->new_image_time_squared, sizeof(COMPLEX)*NhNv);
+  cudaMalloc(&state->reciprocal_new_image_time, sizeof(COMPLEX)*NhNv);
   cudaMalloc(&state->eigenframe_freq, sizeof(COMPLEX)*NhNv);
 
   // Step 5.c: Create the FFT plan
