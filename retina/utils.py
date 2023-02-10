@@ -1,10 +1,12 @@
+""" Utility functions for the RETINA toolkit """
+
 from os import makedirs
 from os.path import join as pjoin
 from shutil import rmtree
 from time import time
 from ctypes import c_int, POINTER
 from numpy import unravel_index, argmax, rint, roll
-from numpy import mgrid, sqrt, exp, ones, zeros, uint16
+from numpy import mgrid, sqrt
 from numpy.random import random, poisson
 from scipy.special import erf
 
@@ -107,11 +109,9 @@ def Gaussian_image(n, w=1, A=4095, c=(0,0), offset=0):
     image   *= A/max_peak
 
     # Step 4: Add an offset to simulate background light noise level
-    image += offset
+    return (image + offset).astype('uint16')
 
-    return image.astype('uint16')
-
-def Poisson_image(n, w=1, s=0.05, A=4095, c=(0,0), offset=0, background="dark", radius=0, dotradius=0):
+def Poisson_image(n, w=1, A=4095, c=(0,0), offset=0):
     """
     Gaussian image with Poisson noise.
 
@@ -122,9 +122,6 @@ def Poisson_image(n, w=1, s=0.05, A=4095, c=(0,0), offset=0, background="dark", 
 
         w : float
             Gaussian width. Default 1.
-
-        s : float
-            Poisson noise strength. Default is 0.05.
 
         A : float
             Gaussian amplitude. Default is 4095 = 2**12 - 1.
@@ -144,10 +141,7 @@ def Poisson_image(n, w=1, s=0.05, A=4095, c=(0,0), offset=0, background="dark", 
     image = Gaussian_image(n, w=w, A=A, c=c, offset=offset)
     return poisson(image).astype('uint16')
 
-def generate_synthetic_image_data_set(outdir, n, Nh, Nv,
-                                      A=10700, w=10, offset=10, imdir=None,
-                                      spread_factor=0.95, prefix="image_",
-                                      displacements_filename="displacements.txt"):
+def generate_synthetic_image_data_set(outdir, N_images, n, **kwargs):
     """
     Generates a data set of image files
 
@@ -158,15 +152,17 @@ def generate_synthetic_image_data_set(outdir, n, Nh, Nv,
             will be deleted (along with all files in it) and a new directory
             will be created.
 
-        n : int
+        N_images : int
             Number of images in data set.
 
-        Nh : int
-            Number of horizontal points in images.
+        n : tuple of ints
+            Number of horizontal and vertical points in the images.
 
-        Nv : int
-            Number of vertical points in images.
+        kwargs : dict
+            Keyword arguments.
 
+    Keyword arguments
+    -----------------
         A : float
             Maximum pixel value in the images. Default is 10700.
 
@@ -186,40 +182,55 @@ def generate_synthetic_image_data_set(outdir, n, Nh, Nv,
         displacements_filename : str
             Displacements output file name. Default is "displacements.txt".
 
+        imdir : str
+            The image output directory. Default is
+            "outdir/images_w"+str(w)+"_o"+str(offset).
+
     Returns
     -------
         imdir : str
             The directory to which the images were output.
     """
 
-    # Step 1: Create the output directory
+    # Step 1: Set keyword arguments
+    valid_keys = ("A","w","offset","spread_factor","prefix",
+                  "displacements_filename","imdir")
+    for key in kwargs:
+        if key not in valid_keys:
+            raise ValueError(f"Unknown keyword argument {key}. Valid arguments are {valid_keys}")
+    A                      = kwargs.get("A"            , 10700)
+    w                      = kwargs.get("w"            , 10)
+    offset                 = kwargs.get("offset"       , 10)
+    spread_factor          = kwargs.get("spread_factor", 0.95)
+    prefix                 = kwargs.get("prefix"       , "image_")
+    displacements_filename = \
+        kwargs.get("displacements_filename", "displacements.txt")
+    imdir                  = \
+        kwargs.get("imdir", pjoin(outdir, "images_w"+str(w)+"_o"+str(offset)))
+
+    # Step 2: Create the output directory
     print(f"(RETINA) Creating output directory {outdir}")
     rmtree(outdir, ignore_errors=True)
-    if imdir is None:
-        imdir = pjoin(outdir, "images_w"+str(w)+"_o"+str(offset))
     print(f"(RETINA) Creating image output directory {imdir}")
     makedirs(imdir)
 
-    # Step 2: Generate the images and displacements.txt files
+    # Step 3: Generate the images and displacements.txt files
     print("(RETINA) Beginning image generation")
     start = time()
-    with open(pjoin(outdir, "displacements.txt"), "w") as f:
-        dh = 0
-        dv = 0
-        im = Poisson_image((Nh,Nv), A=A, w=w, c=(dh,dv))
-        print(im.shape)
-        im.tofile(pjoin(imdir, prefix + "01.bin"), format="%u")
-        f.write(f"{dh:.15e} {dv:.15e}\n")
-        for i in range(1,n+1):
-            dh = spread_factor*(random()-0.5)*Nh
-            dv = spread_factor*(random()-0.5)*Nv
-            im = Poisson_image((Nh,Nv), A=A, w=w, c=(dh,dv))
-            im.tofile(pjoin(imdir, prefix + f"{i+1:02d}.bin"), format="%u")
-            f.write(f"{dh:.15e} {dv:.15e}\n")
-            if not i%(n/5):
-                print(f"(RETINA) Finished generating image {i:05d} out of {n:05d}")
+    with open(pjoin(outdir, displacements_filename), "w", encoding="ascii") as f:
+        c = (0,0)
+        f.write(f"{c[0]:.15e} {c[1]:.15e}\n")
+        Poisson_image((n[0],n[1]), A=A, w=w, c=c).tofile(
+            pjoin(imdir, prefix + "01.bin"), format="%u")
+        for i in range(1,N_images+1):
+            c = (spread_factor*(random()-0.5)*n[0],spread_factor*(random()-0.5)*n[1])
+            f.write(f"{c[0]:.15e} {c[1]:.15e}\n")
+            Poisson_image((n[0],n[1]), A=A, w=w, c=c).tofile(
+                pjoin(imdir, prefix + f"{i+1:02d}.bin"), format="%u")
+            if not i%(N_images/5):
+                print(f"(RETINA) Finished generating image {i:05d} out of {N_images:05d}")
 
     # All done!
-    end = time()
-    print(f"(RETINA) Finished generating {n} images of size {Nh} x {Nv} in {end-start:.1f} seconds")
+    print(f"(RETINA) Finished generating {N_images} images")
+    print(f"(RETINA) of size {n} in {time()-start:.1f} seconds")
     return imdir

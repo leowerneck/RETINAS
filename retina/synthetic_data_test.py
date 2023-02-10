@@ -25,8 +25,10 @@ w               = 16
 spread_factor   = 0.95
 outdir          = "out"
 N_images        = 1000
-imdir = generate_synthetic_image_data_set(outdir, N_images, N_horizontal, N_vertical,
-                                          A=A, w=w, offset=offset, spread_factor=0.95)
+imdir           = generate_synthetic_image_data_set(outdir, N_images,
+                                                    (N_horizontal,N_vertical),
+                                                    A=A, w=w, offset=offset,
+                                                    spread_factor=spread_factor)
 
 r = retina(libpath, N_horizontal, N_vertical, upsample_factor, time_constant, precision="double")
 print("(RETINA) Beginning image processing")
