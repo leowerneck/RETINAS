@@ -50,18 +50,6 @@ static void compute_reverse_shift_2d_gpu(
 
 }
 
-__global__
-void print_1d_array_gpu(const int n, const COMPLEX *restrict z) {
-  for(int i=0;i<n;i++)
-    printf(" (%23.15e,%23.15e)", z[i].x, z[i].y);
-  printf("\n");
-}
-
-void print_1d_array(const int n, const COMPLEX *restrict z) {
-  print_1d_array_gpu<<<1,1>>>(n, z);
-  cudaDeviceSynchronize();
-}
-
 extern "C" __host__
 void compute_reverse_shift_matrix(
     const int N_horizontal,
@@ -83,9 +71,4 @@ void compute_reverse_shift_matrix(
   compute_reverse_shift_2d_gpu<<<dim3(32,16),dim3(32,16)>>>(N_horizontal, N_vertical,
                                                             horizontal_shifts, vertical_shifts,
                                                             shift2D);
-
-  // printf("Horizontal shifts:"); print_1d_array(N_horizontal, horizontal_shifts); printf("\n");
-  // printf("Vertical   shifts:"); print_1d_array(N_vertical  , vertical_shifts); printf("\n");
-  // printf("Shift matrix:\n");
-  // print_2d_array_complex(N_horizontal, N_vertical, shift2D);
 }

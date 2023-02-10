@@ -149,14 +149,20 @@ void get_eigenframe(
     state_struct *restrict state,
     REAL *restrict eigenframe_time );
 
-// This function is implemented in print_2d_array.cu
+// This function is implemented in print_arrays.cu
+__host__
+void print_1d_array_complex(
+    const int n,
+    const COMPLEX *restrict z );
+
+// This function is implemented in print_arrays.cu
 __host__
 void print_2d_array_real(
     const int m,
     const int n,
     const REAL *restrict x );
 
-// This function is implemented in print_2d_array.cu
+// This function is implemented in print_arrays.cu
 __host__
 void print_2d_array_complex(
     const int m,
