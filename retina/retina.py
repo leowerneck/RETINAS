@@ -1,5 +1,5 @@
 from numpy import exp, array, single, double
-from ctypes import c_int, c_float, c_double, c_uint16
+from ctypes import c_bool, c_uint16, c_int, c_float, c_double
 from ctypes import c_void_p, POINTER, cast, CDLL
 
 from utils import setup_library_function
@@ -51,7 +51,7 @@ class retina:
         #     const REAL A0,
         #     const REAL B1 );
         setup_library_function(lib.state_initialize,
-            [c_int, c_int, self.c_real, self.c_real, self.c_real, self.c_real], c_void_p)
+            [c_int, c_int, self.c_real, self.c_real, self.c_real, c_bool, self.c_real], c_void_p)
         self.lib_state_initialize = lib.state_initialize
 
         # Step 3.b.2: The state_finalize function
@@ -223,6 +223,7 @@ class retina:
                        self.upsample_factor,
                        self.A0,
                        self.B1,
+                       self.shot_noise,
                        self.shift)
 
     def __del__(self):
