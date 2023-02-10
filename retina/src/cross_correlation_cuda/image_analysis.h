@@ -107,7 +107,7 @@
 
 // Image analysis parameter struct
 typedef struct state_struct {
-  bool eigenshot;
+  bool shot_noise_method;
   int N_horizontal, N_vertical;
   REAL upsample_factor, A0, B1, shift;
   uint16_t *aux_array_int;            // GPU (device)

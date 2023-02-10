@@ -86,6 +86,13 @@ REAL typecast_input_image_and_compute_brightness_shot_noise(
       state->reciprocal_new_image_time,
       state->new_image_time );
 
+  // printf("I:\n");
+  // print_2d_array_real(Nh, Nv, state->aux_array_real);
+  // printf("1/(I+%g):\n", state->shift);
+  // print_2d_array_complex(Nh, Nv, state->reciprocal_new_image_time);
+  // printf("I^2:\n");
+  // print_2d_array_complex(Nh, Nv, state->new_image_time);
+
   // Step 4: Compute the brightness
   REAL brightness;
   CUBLASASUM(state->cublasHandle, NhNv, state->aux_array_real, 1, &brightness);

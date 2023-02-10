@@ -24,6 +24,8 @@ void cross_correlate_ref_and_new_images( state_struct *restrict state ) {
                   state->new_image_freq,
                   CUFFT_FORWARD);
 
+
+
   // Step 2: Compute image product target * src^{*}
   element_wise_multiplication_conj_2d(state->N_horizontal,
                                       state->N_vertical,
@@ -38,4 +40,17 @@ void cross_correlate_ref_and_new_images( state_struct *restrict state ) {
                   state->aux_array1,
                   state->aux_array2,
                   CUFFT_INVERSE);
+
+  // const int Nh = state->N_horizontal;
+  // const int Nv = state->N_vertical;
+  // printf("I^2:\n");
+  // print_2d_array_complex(Nh, Nv, state->new_image_time);
+  // printf("F[I^2]:\n");
+  // print_2d_array_complex(Nh, Nv, state->new_image_freq);
+  // printf("F[1/E]:\n");
+  // print_2d_array_complex(Nh, Nv, state->eigenframe_freq);
+  // printf("Image product:\n");
+  // print_2d_array_complex(Nh, Nv, state->aux_array1);
+  // printf("Cross-correlation:\n");
+  // print_2d_array_complex(Nh, Nv, state->aux_array2);
 }

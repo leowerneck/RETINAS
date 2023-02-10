@@ -14,6 +14,7 @@ state_struct *state_initialize(
     const REAL upsample_factor,
     const REAL A0,
     const REAL B1,
+    const bool shot_noise_method,
     const REAL shift );
 
 // This function is implemented in state_finalize.cu
@@ -147,6 +148,20 @@ __host__
 void get_eigenframe(
     state_struct *restrict state,
     REAL *restrict eigenframe_time );
+
+// This function is implemented in print_2d_array.cu
+__host__
+void print_2d_array_real(
+    const int m,
+    const int n,
+    const REAL *restrict x );
+
+// This function is implemented in print_2d_array.cu
+__host__
+void print_2d_array_complex(
+    const int m,
+    const int n,
+    const COMPLEX *restrict z );
 
 // Inline function to compute the exponential of a complex number
 __host__ __device__

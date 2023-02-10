@@ -132,7 +132,7 @@ void upsample_around_displacements(
   compute_vertical_kernel(sample_region_offset, state);
 
   // Step 10: Now contract the result of Step 8 with the vertical kernel to get the upsampled image
-  // Note: aux_array1 will contains the upsampled image,
+  // Note: aux_array1 will contain the upsampled image,
   //       aux_array2 contains the vertical kernel, and
   //       aux_array3 is the same as in Step 8.
   complex_matrix_multiply_tt(state->cublasHandle,
