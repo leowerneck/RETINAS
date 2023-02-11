@@ -49,7 +49,9 @@ class retina:
         #     const int N_vertical,
         #     const REAL upsample_factor,
         #     const REAL A0,
-        #     const REAL B1 );
+        #     const REAL B1,
+        #     const bool shot_noise_method,
+        #     const REAL shift );
         setup_library_function(lib.state_initialize,
             [c_int, c_int, self.c_real, self.c_real, self.c_real, c_bool, self.c_real], c_void_p)
         self.lib_state_initialize = lib.state_initialize
