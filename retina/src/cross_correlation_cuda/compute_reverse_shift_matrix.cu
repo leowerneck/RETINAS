@@ -57,7 +57,7 @@ void compute_reverse_shift_matrix(
     const REAL *restrict displacements,
     COMPLEX *restrict horizontal_shifts,
     COMPLEX *restrict vertical_shifts,
-    COMPLEX *restrict shift2D ) {
+    COMPLEX *restrict shift_matrix ) {
 
   // Step 1: Compute the horizontal shift
   const int Nho2 = N_horizontal/2;
@@ -70,5 +70,5 @@ void compute_reverse_shift_matrix(
   // Step 3: Compute the reverse shift 2D
   compute_reverse_shift_2d_gpu<<<dim3(32,16),dim3(32,16)>>>(N_horizontal, N_vertical,
                                                             horizontal_shifts, vertical_shifts,
-                                                            shift2D);
+                                                            shift_matrix );
 }

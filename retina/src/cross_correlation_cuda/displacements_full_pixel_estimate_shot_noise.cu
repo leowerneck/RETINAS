@@ -28,7 +28,7 @@ void displacements_full_pixel_estimate_shot_noise(
   const int NhNv = Nh*Nv;
 
   // Step 2: Compute the absolute value of the cross-correlation
-  absolute_value_2d(Nh, Nv, state->aux_array2, state->aux_array_real);
+  absolute_value_2d(Nh, Nv, state->cross_correlation, state->aux_array_real);
 
   // Step 3: Compute index of the minimum
   const int idx_min = find_minima(state->cublasHandle, NhNv, state->aux_array_real);

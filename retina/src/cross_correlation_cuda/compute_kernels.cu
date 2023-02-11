@@ -151,14 +151,16 @@ void compute_horizontal_kernel(
    * This is the CPU wrapper to function compute_horizontal_kernel_gpu above.
    */
 
+  // Step 1: Set useful quantities
   const int Nh = state->N_horizontal;
   const int S  = (int)(state->upsample_factor*1.5+0.5);
-  // aux_array1 contains the image product at this point. Use 2 or 3 instead.
-  // Compute the horizontal frequencies and store them in freq_array
+
+  // Step 2: Compute FFT frequencies
   fftfreq(Nh, state->upsample_factor, state->aux_array_real);
-  // Now compute the horizontal kernel, storing it in aux_array2
+
+  // Step 3: Compute the horizontal kernel
   compute_horizontal_kernel_gpu<<<dim3(32,16),dim3(32,16)>>>(
-    S, Nh, sample_region_offset[0], state->aux_array_real, state->aux_array2);
+    S, Nh, sample_region_offset[0], state->aux_array_real, state->horizontal_kernel);
 }
 
 extern "C" __host__
@@ -169,12 +171,14 @@ void compute_vertical_kernel(
    * This is the CPU wrapper to function compute_vertical_kernel_gpu above.
    */
 
+  // Step 1: Set useful quantities
   const int Nv = state->N_vertical;
   const int S  = (int)(state->upsample_factor*1.5+0.5);
-  // aux_array3 contains the contraction at this point. Use 1 or 2 instead.
-  // Compute the vertical frequencies and store them in freq_array
+
+  // Step 2: Compute FFT frequencies
   fftfreq(Nv, state->upsample_factor, state->aux_array_real);
-  // Now compute the vertical kernel, storing it in aux_array2
+
+  // Step 3: Compute the vertical kernel
   compute_vertical_kernel_gpu<<<dim3(32,16),dim3(32,16)>>>(
-    Nv, S, sample_region_offset[1], state->aux_array_real, state->aux_array2);
+    Nv, S, sample_region_offset[1], state->aux_array_real, state->vertical_kernel);
 }

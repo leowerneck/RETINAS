@@ -55,32 +55,44 @@ state_struct *state_initialize(
   const int N_upsampling = (int)CEIL(upsample_factor * 1.5);
   const int aux_size     = MAX(N_horizontal, N_upsampling)*MAX(N_vertical, N_upsampling);
 
-  // Step 4: Allocate memory for host quantities
-  state->host_aux_array = (COMPLEX *)malloc(sizeof(COMPLEX)*NhNv);
-
-  // Step 5: Allocate memory for device quantities
-  // Step 5.a: Auxiliary arrays
+  // Step 4: Allocate memory for device quantities
+  // Step 4.a: Auxiliary arrays
   cudaMalloc(&state->aux_array_int , sizeof(uint16_t)*aux_size);
   cudaMalloc(&state->aux_array_real, sizeof(REAL)    *aux_size);
   cudaMalloc(&state->aux_array1    , sizeof(COMPLEX) *aux_size);
   cudaMalloc(&state->aux_array2    , sizeof(COMPLEX) *aux_size);
   cudaMalloc(&state->aux_array3    , sizeof(COMPLEX) *aux_size);
 
-  // Step 5.b: Arrays that hold the images
-  cudaMalloc(&state->new_image_time , sizeof(COMPLEX)*NhNv);
-  cudaMalloc(&state->new_image_freq , sizeof(COMPLEX)*NhNv);
+  // Step 4.b: Arrays that hold the images
+  cudaMalloc(&state->new_image_time           , sizeof(COMPLEX)*NhNv);
+  cudaMalloc(&state->new_image_freq           , sizeof(COMPLEX)*NhNv);
   cudaMalloc(&state->reciprocal_new_image_time, sizeof(COMPLEX)*NhNv);
-  cudaMalloc(&state->eigenframe_freq, sizeof(COMPLEX)*NhNv);
+  cudaMalloc(&state->eigenframe_freq          , sizeof(COMPLEX)*NhNv);
 
-  // Step 5.c: Create the FFT plan
+  // Step 4.c: Set additional, auxiliary arrays
+  // Step 4.c.1: Pointers that map to aux_array1
+  state->eigenframe_time   = state->aux_array1;
+  state->image_product     = state->aux_array1;
+  state->upsampled_image   = state->aux_array1;
+  state->horizontal_shifts = state->aux_array1;
+  // Step 4.c.2: Pointers that map to aux_array2
+  state->cross_correlation = state->aux_array2;
+  state->horizontal_kernel = state->aux_array2;
+  state->vertical_kernel   = state->aux_array2;
+  state->vertical_shifts   = state->aux_array2;
+  // Step 4.c.3: Pointers that map to aux_array3
+  state->partial_product   = state->aux_array3;
+  state->shift_matrix      = state->aux_array3;
+
+  // Step 4.d: Create the FFT plan
   cufftPlan2d(&state->fft2_plan, N_vertical, N_horizontal, FFT_C2C);
 
-  // Step 5.d: Create the cuBLAS handle
+  // Step 4.e: Create the cuBLAS handle
   cublasCreate(&state->cublasHandle);
 
-  // Step 6: Print basic information to the user
+  // Step 5: Print basic information to the user
   info("Successfully initialized state object\n");
 
-  // Step 7: All done! Return the CUDA state object
+  // Step 6: All done! Return the state object
   return state;
 }

@@ -29,8 +29,8 @@ void displacements_sub_pixel_estimate_shot_noise(
   const int S                = (int)up_region_size;
   const int SS               = S*S;
 
-  // Step 2: Compute the absolute value of the cross-correlation
-  absolute_value_2d(S, S, state->aux_array1, state->aux_array_real);
+  // Step 2: Compute the absolute value of the upsampled image
+  absolute_value_2d(S, S, state->upsampled_image, state->aux_array_real);
 
   // Step 3: Compute index of the minimum
   const int idx_min = find_minima(state->cublasHandle, SS, state->aux_array_real);

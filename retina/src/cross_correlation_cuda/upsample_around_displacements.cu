@@ -84,11 +84,20 @@ void upsample_around_displacements(
    *  Returns
    *  -------
    *    Nothing.
+   *
+   *  Note
+   *  ----
+   *    Not all pointers inside the state object are unique. Keep the following
+   *    information in mind when dealing with the pointers in this function:
+   *
+   *      state->image_product     == state->aux_array1
+   *      state->upsampled_image   == state->aux_array1
+   *      state->horizontal_kernel == state->aux_array2
+   *      state->vertical_kernel   == state->aux_array2
+   *
+   *    For more information, see image_analysis.h and state_initialize.cu.
    */
 
-  // Note: At the beginning of this function, aux_array1 stores the
-  //       image product, while aux_array2 and aux_array3 are empty.
-  //
   // Step 1: Set basic variables
   const int Nh = state->N_horizontal;
   const int Nv = state->N_vertical;
@@ -116,30 +125,24 @@ void upsample_around_displacements(
   compute_horizontal_kernel(sample_region_offset, state);
 
   // Step 8: Contract the horizontal kernel with the conjugate of the image product
-  complex_conjugate_2d(Nh, Nv, state->aux_array1);
-  // Note: aux_array1 contains the complex conjugate of the image product,
-  //       aux_array2 contains the horizontal kernel, and
-  //       aux_array3 will contain the matrix product of aux_array2 and aux_array1.
+  complex_conjugate_2d(Nh, Nv, state->image_product);
   complex_matrix_multiply(state->cublasHandle,
                           S,
                           Nh,
                           Nv,
-                          state->aux_array2,  // Size  S x Nh
-                          state->aux_array1,  // Size Nh x Nv
-                          state->aux_array3); // Size  S x Nv
+                          state->horizontal_kernel, // Size  S x Nh
+                          state->image_product,     // Size Nh x Nv
+                          state->partial_product);  // Size  S x Nv
 
   // Step 9: Compute the vertical kernel (set in aux_array2)
   compute_vertical_kernel(sample_region_offset, state);
 
   // Step 10: Now contract the result of Step 8 with the vertical kernel to get the upsampled image
-  // Note: aux_array1 will contain the upsampled image,
-  //       aux_array2 contains the vertical kernel, and
-  //       aux_array3 is the same as in Step 8.
   complex_matrix_multiply_tt(state->cublasHandle,
                              S,
                              Nv,
                              S,
-                             state->aux_array3,  // Size  S x Nv
-                             state->aux_array2,  // Size Nv x S
-                             state->aux_array1); // Size  S x S
+                             state->partial_product,  // Size  S x Nv
+                             state->vertical_kernel,  // Size Nv x S
+                             state->upsampled_image); // Size  S x S
 }

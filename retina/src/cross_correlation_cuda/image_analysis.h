@@ -112,14 +112,27 @@ typedef struct state_struct {
   REAL upsample_factor, A0, B1, shift;
   uint16_t *aux_array_int;            // GPU (device)
   REAL *aux_array_real;               // GPU (device)
-  COMPLEX *host_aux_array;            // CPU (host)
   COMPLEX *aux_array1;                // GPU (device)
   COMPLEX *aux_array2;                // GPU (device)
   COMPLEX *aux_array3;                // GPU (device)
   COMPLEX *new_image_time;            // GPU (device)
   COMPLEX *new_image_freq;            // GPU (device)
-  COMPLEX *reciprocal_new_image_time; // GPU (device)
   COMPLEX *eigenframe_freq;           // GPU (device)
+  COMPLEX *reciprocal_new_image_time; // GPU (device)
+
+  // No memory is allocated for these, but they are
+  // useful and more descriptive than "aux_array"
+  COMPLEX *eigenframe_time;
+  COMPLEX *image_product;
+  COMPLEX *cross_correlation;
+  COMPLEX *upsampled_image;
+  COMPLEX *horizontal_kernel;
+  COMPLEX *vertical_kernel;
+  COMPLEX *partial_product;
+  COMPLEX *horizontal_shifts;
+  COMPLEX *vertical_shifts;
+  COMPLEX *shift_matrix;
+
   FFT_PLAN fft2_plan;
   cublasHandle_t cublasHandle;
 } state_struct;

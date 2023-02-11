@@ -9,7 +9,7 @@ void compute_displacements_and_build_next_eigenframe_shot_noise(
    *
    *  Inputs
    *  ------
-   *    state         : The CUDA state object, containing the new and reference images.
+   *    state         : The state object (see image_analysis.h).
    *    displacements : Stores the result.
    *
    *  Returns

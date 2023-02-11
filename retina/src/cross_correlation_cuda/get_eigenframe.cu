@@ -9,7 +9,7 @@ void get_eigenframe(
    *
    *  Inputs
    *  ------
-   *    state      : The CUDA state object.
+   *    state      : The state object (see image_analysis.h).
    *    eigenframe : Real array that stores the eigenframe.
    *
    *  Returns
@@ -20,7 +20,7 @@ void get_eigenframe(
   // Step 1: Compute the inverse FFT of the current eigenframe.
   FFT_EXECUTE_DFT(state->fft2_plan,
                   state->eigenframe_freq,
-                  state->aux_array1,
+                  state->eigenframe_time,
                   CUFFT_INVERSE);
 
   // Step 2: The eigenframe should be real, so the imaginary components
@@ -28,7 +28,7 @@ void get_eigenframe(
   //         as the absolute value of aux_array1.
   absolute_value_2d(state->N_horizontal,
                     state->N_vertical,
-                    state->aux_array1,
+                    state->eigenframe_time,
                     state->aux_array_real);
 
   // Step 3: Now copy the data from the GPU to the CPU

@@ -7,11 +7,11 @@ void cross_correlate_ref_and_new_images( state_struct *restrict state ) {
    *
    *  Inputs
    *  ------
-   *    state : The state object, containing the new image
+   *    state : The state object, containing the new image.
    *
    *  Outputs
    *  -------
-   *    state : The state object, containing the cross correlation
+   *    state : The state object, containing the cross correlation.
    *
    *  Returns
    *  -------
@@ -31,13 +31,13 @@ void cross_correlate_ref_and_new_images( state_struct *restrict state ) {
                                       state->N_vertical,
                                       state->new_image_freq,
                                       state->eigenframe_freq,
-                                      state->aux_array1);
+                                      state->image_product);
 
   // Step 3: Compute the cross correlation
   // Note: aux_array1 stores the image product and
   //       aux_array2 stores the cross correlation
   FFT_EXECUTE_DFT(state->fft2_plan,
-                  state->aux_array1,
-                  state->aux_array2,
+                  state->image_product,
+                  state->cross_correlation,
                   CUFFT_INVERSE);
 }

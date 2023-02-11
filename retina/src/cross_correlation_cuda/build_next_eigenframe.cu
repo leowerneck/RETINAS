@@ -59,9 +59,9 @@ void build_next_eigenframe(
   const int Nh = state->N_horizontal;
   const int Nv = state->N_vertical;
   compute_reverse_shift_matrix(Nh, Nv, displacements,
-                               state->aux_array1,
-                               state->aux_array2,
-                               state->aux_array3);
+                               state->horizontal_shifts,
+                               state->vertical_shifts,
+                               state->shift_matrix);
 
   // Step 2: Now shift the new image and add it to the eigenframe
   // Note: in the shot noise method, the following identification is made:
@@ -69,5 +69,5 @@ void build_next_eigenframe(
   //   state->eigenframe_freq == state->reciprocal_eigenframe_freq
   shift_image_add_to_eigenframe_gpu<<<MIN(Nv,512),MIN(Nh,512)>>>(
     Nh, Nv, state->A0, state->B1, state->new_image_freq,
-    state->aux_array3, state->eigenframe_freq);
+    state->shift_matrix, state->eigenframe_freq);
 }

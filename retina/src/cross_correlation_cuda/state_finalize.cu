@@ -15,10 +15,7 @@ void state_finalize( state_struct *restrict state ) {
    *    Nothing.
    */
 
-  // Step 1: Free memory for all host arrays
-  free(state->host_aux_array);
-
-  // Step 2: Free memory for all device arrays
+  // Step 1: Free memory for all device arrays
   cudaFree(state->aux_array_int);
   cudaFree(state->aux_array_real);
   cudaFree(state->aux_array1);
@@ -29,13 +26,13 @@ void state_finalize( state_struct *restrict state ) {
   cudaFree(state->reciprocal_new_image_time);
   cudaFree(state->eigenframe_freq);
 
-  // Step 3: Destroy FFT plans
+  // Step 2: Destroy FFT plans
   FFT_DESTROY_PLAN(state->fft2_plan);
 
-  // Step 4: Destroy cuBLAS handle
+  // Step 3: Destroy cuBLAS handle
   cublasDestroy(state->cublasHandle);
 
-  // Step 5: Free memory allocated for the state struct
+  // Step 4: Free memory allocated for the state struct
   free(state);
 
   info("Successfully finalized state object\n");
