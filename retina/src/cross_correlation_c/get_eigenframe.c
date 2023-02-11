@@ -17,7 +17,7 @@ void get_eigenframe(
    */
 
   // Step 1: Compute the inverse FFT of the current eigenframe.
-  FFTW_EXECUTE_DFT(state->ifft2_plan, state->eigenframe_freq, state->aux_array1);
+  FFTW_EXECUTE_DFT(state->ifft2_plan, state->ref_image_freq, state->aux_array1);
 
   // Step 2: The eigenframe should be real, so the imaginary components
   //         of aux_array1 should be tiny. We compute the eigenframe

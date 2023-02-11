@@ -12,6 +12,7 @@
 #include <string.h> // "string.h Needed for strncmp, etc.
 #include <stdint.h> // "stdint.h" Needed for Windows GCC 6.x compatibility, and for int8_t
 #include <stdarg.h>
+#include <stdbool.h>
 
 #ifndef M_PI
 #define M_PI 3.141592653589793238462643383279502884L
@@ -70,8 +71,7 @@
 #  define FFTW_EXECUTE_DFT fftwf_execute_dft
 #  define FFTW_CLEANUP fftwf_cleanup
 #  define CBLAS_GEMM cblas_cgemm
-#  define CBLAS_IAMAX_REAL cblas_isamax
-#  define CBLAS_IAMAX_COMPLEX cblas_icamax
+#  define CBLAS_IAMAX cblas_icamax
 #else
 #  define REAL double
 #  define ROUND round
@@ -94,14 +94,14 @@
 #  define FFTW_EXECUTE_DFT fftw_execute_dft
 #  define FFTW_CLEANUP fftw_cleanup
 #  define CBLAS_GEMM cblas_zgemm
-#  define CBLAS_IAMAX_REAL cblas_idamax
-#  define CBLAS_IAMAX_COMPLEX cblas_izamax
+#  define CBLAS_IAMAX cblas_izamax
 #endif
 
 // Image analysis parameter struct
 typedef struct state_struct {
+  bool shot_noise_method;
   int N_horizontal, N_vertical;
-  REAL upsample_factor, A0, B1;
+  REAL upsample_factor, A0, B1, shift;
   FFTW_PLAN fft2_plan, ifft2_plan;
   COMPLEX *restrict aux_array1;
   COMPLEX *restrict aux_array2;
@@ -121,7 +121,9 @@ state_struct *state_initialize(
     const int N_vertical,
     const REAL upsample_factor,
     const REAL A0,
-    const REAL B1 );
+    const REAL B1,
+    const bool shot_noise_method,
+    const REAL shift );
 
 // This function is implemented in state_finalize.c
 void state_finalize( state_struct *restrict state );
@@ -139,13 +141,21 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
 // This function is implemented in set_zeroth_eigenframe.c
 void set_zeroth_eigenframe( state_struct *restrict state );
 
-// This function is implemented in cross_correlate_and_compute_displacements.c
-void cross_correlate_and_compute_displacements(
+// This function is implemented in cross_correlate_ref_and_new_images.c
+void cross_correlate_ref_and_new_images( state_struct *restrict state );
+
+// This function is implemented in displacements_full_pixel_estimate.c
+void displacements_full_pixel_estimate(
     state_struct *restrict state,
     REAL *restrict displacements );
 
-// This function is implemented in upsample_and_compute_subpixel_displacements.c
-void upsample_and_compute_subpixel_displacements(
+// This function is implemented in displacements_sub_pixel_estimate.c
+void displacements_sub_pixel_estimate(
+    state_struct *restrict state,
+    REAL *restrict displacements );
+
+// This function is implemented in upsample_around_displacements.c
+void upsample_around_displacements(
     state_struct *restrict state,
     REAL *restrict displacements );
 
@@ -185,6 +195,25 @@ void info(const char *format, ...) {
   va_start(args, format);
   vprintf(format, args);
   va_end(args);
+}
+
+static inline
+int round_towards_zero(const REAL x) {
+  /*
+   *  Rounds a number to the nearest integer towards zero.
+   *
+   *  Inputs
+   *  ------
+   *    x : Number to be rounded.
+   *
+   *  Returns
+   *  -------
+   *    y : Number rounded towards zero.
+   */
+  if( x > 0.0 )
+    return FLOOR(x);
+  else
+    return CEIL(x);
 }
 
 //********************************************

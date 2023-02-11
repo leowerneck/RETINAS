@@ -4,8 +4,8 @@ void build_next_eigenframe(
     const REAL *restrict displacements,
     state_struct *restrict state ) {
   /*
-   *  Construct the next eigenframe using:
-   *   eigenframe_new = A0*new_image_shifted + B1*eigenframe_old.
+   *  Construct the next reference image using:
+   *   ref_image_new = A0*new_image_shifted + B1*ref_image_old.
    *
    *  Inputs
    *  ------
@@ -29,9 +29,9 @@ void build_next_eigenframe(
   for(int j=0;j<state->N_vertical;j++) {
     for(int i=0;i<state->N_horizontal;i++) {
       const int idx = i+state->N_horizontal*j;
-      state->eigenframe_freq[idx] =
+      state->ref_image_freq[idx] =
         state->A0*state->new_image_freq[idx]*state->aux_array3[idx]
-      + state->B1*state->eigenframe_freq[idx];
+      + state->B1*state->ref_image_freq[idx];
     }
   }
 }

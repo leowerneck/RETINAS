@@ -1,8 +1,6 @@
 #include "image_analysis.h"
 
-void cross_correlate_ref_and_new_images(
-    state_struct *restrict state,
-    REAL *restrict displacements ) {
+void cross_correlate_ref_and_new_images( state_struct *restrict state ) {
   /*
    *  Find the displacements by finding the maxima of the
    *  cross-correlation between the new and reference images.
@@ -26,7 +24,7 @@ void cross_correlate_ref_and_new_images(
   for(int j=0;j<N_vertical;j++) {
     for(int i=0;i<N_horizontal;i++) {
       const int idx = i + N_horizontal*j;
-      state->aux_array1[idx] = state->new_image_freq[idx]*CONJ(state->eigenframe_freq[idx]);
+      state->aux_array1[idx] = state->new_image_freq[idx]*CONJ(state->ref_image_freq[idx]);
     }
   }
 

@@ -5,7 +5,9 @@ state_struct *state_initialize(
       const int N_vertical,
       const REAL upsample_factor,
       const REAL A0,
-      const REAL B1 ) {
+      const REAL B1,
+      const bool shot_noise_method,
+      const REAL shift ) {
   /*
    *  Create a new C state object.
    *
@@ -20,26 +22,30 @@ state_struct *state_initialize(
    *
    *  Returns
    *  -------
-   *    state           : The C state object, fully initialized.
+   *    state           : The state object, fully initialized.
    */
 
-  info("Initializing C state object.\n");
+  info("Initializing state object.\n");
   info("  Parameters:\n");
   info("    N_horizontal    = %d\n", N_horizontal);
   info("    N_vertical      = %d\n", N_vertical);
   info("    upsample_factor = %g\n", upsample_factor);
   info("    A0              = %g\n", A0);
   info("    B1              = %g\n", B1);
+  if( shot_noise_method )
+    info("    shift           = %g\n", shift);
 
   // Step 1: Allocate memory for the parameter struct
   state_struct *state = (state_struct *)malloc(sizeof(state_struct));
 
   // Step 2: Copy Python parameters to the C state struct
-  state->N_horizontal    = N_horizontal;
-  state->N_vertical      = N_vertical;
-  state->upsample_factor = upsample_factor;
-  state->A0              = A0;
-  state->B1              = B1;
+  state->N_horizontal      = N_horizontal;
+  state->N_vertical        = N_vertical;
+  state->upsample_factor   = upsample_factor;
+  state->A0                = A0;
+  state->B1                = B1;
+  state->shot_noise_method = shot_noise_method;
+  state->shift             = shift;
 
   // Step 3: Define auxiliary variables
   const int NhNv         = N_horizontal * N_vertical;
@@ -52,9 +58,9 @@ state_struct *state_initialize(
   state->aux_array3 = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(aux_size);
 
   // Step 5: Allocate memory for the arrays that hold the images
-  state->new_image_time  = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
-  state->new_image_freq  = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
-  state->eigenframe_freq = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
+  state->new_image_time = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
+  state->new_image_freq = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
+  state->ref_image_freq = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
 
   // Step 6: Create the FFT plans
   // Step 6.a: Forward FFT (the pointers here are dummy, they just need enough memory allocated)
@@ -68,7 +74,7 @@ state_struct *state_initialize(
                                         FFTW_BACKWARD, FFTW_ESTIMATE);
 
   // Step 7: Print basic information to the user
-  info("Successfully initialized C state object\n");
+  info("Successfully initialized state object\n");
 
   // Step 8: Return C state
   return state;

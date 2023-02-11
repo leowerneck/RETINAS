@@ -8,21 +8,27 @@ void compute_displacements_and_build_next_eigenframe(
    *
    *  Inputs
    *  ------
-   *    state        : The C state object, containing the new and reference images.
+   *    state         : The state object (see image_analysis.h).
    *    displacements : Stores the result.
    *
    *  Returns
    *  -------
    *    Nothing.
+   *
    */
 
   // Step 1: Compute the displacements via cross-correlation
-  cross_correlate_and_compute_displacements(state, displacements);
+  cross_correlate_ref_and_new_images(state);
 
-  // Step 2: Compute the displacements using upsampling
-  if( (int)(state->upsample_factor+0.5) > 1 )
-    upsample_and_compute_subpixel_displacements(state, displacements);
+  // Step 2: Get the full pixel estimate of the displacements
+  displacements_full_pixel_estimate(state, displacements);
 
-  // Step 3: Build next eigenframe
+  // Step 3: Compute the displacements using upsampling
+  if( (int)(state->upsample_factor+0.5) > 1 ) {
+    upsample_around_displacements(state, displacements);
+    displacements_sub_pixel_estimate(state, displacements);
+  }
+
+  // Step 4: Build next eigenframe
   build_next_eigenframe(displacements, state);
 }

@@ -20,7 +20,7 @@ void state_finalize( state_struct *restrict state ) {
   FFTW_FREE(state->aux_array3);
   FFTW_FREE(state->new_image_time);
   FFTW_FREE(state->new_image_freq);
-  FFTW_FREE(state->eigenframe_freq);
+  FFTW_FREE(state->ref_image_freq);
 
   // Step 2: Destroy FFT plans
   FFTW_DESTROY_PLAN(state->fft2_plan);

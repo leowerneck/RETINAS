@@ -1,25 +1,6 @@
 #include "image_analysis.h"
 
 static inline
-int round_towards_zero(const REAL x) {
-  /*
-   *  Rounds a number to the nearest integer towards zero.
-   *
-   *  Inputs
-   *  ------
-   *    x : Number to be rounded.
-   *
-   *  Returns
-   *  -------
-   *    y : Number rounded towards zero.
-   */
-  if( x > 0.0 )
-    return FLOOR(x);
-  else
-    return CEIL(x);
-}
-
-static inline
 void complex_matrix_multiply(
     const int m,
     const int p,
@@ -83,7 +64,7 @@ void complex_matrix_multiply_tt(
              n,m,p,a,B,p,A,m,b,C,m);
 }
 
-void upsample_and_compute_subpixel_displacements(
+void upsample_around_displacements(
     state_struct *restrict state,
     REAL *restrict displacements ) {
   /*
@@ -171,25 +152,4 @@ void upsample_and_compute_subpixel_displacements(
   //       aux_array3 is the same as in Step 8.
   complex_matrix_multiply_tt(S, N_vertical, S,
                              state->aux_array3, state->aux_array2, state->aux_array1);
-
-  // Step 10: Get maximum of upsampled image
-  int i_max=0,j_max=0;
-  REAL cc_max = -1.0;
-  for(int j_s=0;j_s<S;j_s++) {
-    for(int i_s=0;i_s<S;i_s++) {
-      const REAL cc = CABS(state->aux_array1[i_s + S*j_s]);
-      if( cc > cc_max ) {
-        cc_max = cc;
-        // FIXME: Why do I need to flip?
-        // Answer: It has to do with the FFT index ordering. I think
-        // using Ny,Nx instead of Nx,Ny fixes this, but needs testing.
-        i_max  = j_s;
-        j_max  = i_s;
-      }
-    }
-  }
-
-  // Step 11: Update the displacements
-  displacements[0] += ((REAL)i_max - dftshift)/upsample_factor;
-  displacements[1] += ((REAL)j_max - dftshift)/upsample_factor;
 }
