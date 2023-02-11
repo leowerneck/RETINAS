@@ -29,7 +29,7 @@ void displacements_sub_pixel_estimate(
   const int SS               = S*S;
 
   // Step 2: Get maximum of upsampled image
-  const int idx   = CBLAS_IAMAX(SS, state->aux_array1, 1);
+  const int idx   = CBLAS_IAMAX_COMPLEX(SS, state->aux_array1, 1);
   const int i_max = idx/S;
   const int j_max = idx - i_max*S;
 

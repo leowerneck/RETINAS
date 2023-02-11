@@ -18,4 +18,6 @@ void set_zeroth_eigenframe( state_struct *restrict state ) {
   FFTW_EXECUTE_DFT(state->fft2_plan,
                    state->new_image_time,
                    state->ref_image_freq);
+
+  FFTW_EXECUTE_DFT_R2C(state->Itime, state->Efreq);
 }

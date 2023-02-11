@@ -41,6 +41,8 @@ state_struct *state_initialize(
   // Step 2: Copy Python parameters to the C state struct
   state->N_horizontal      = N_horizontal;
   state->N_vertical        = N_vertical;
+  state->N_aux             = N_horizontal/2+1;
+  state->aux_size          = state->N_aux * state->N_vertical;
   state->upsample_factor   = upsample_factor;
   state->A0                = A0;
   state->B1                = B1;
@@ -65,13 +67,32 @@ state_struct *state_initialize(
   // Step 6: Create the FFT plans
   // Step 6.a: Forward FFT (the pointers here are dummy, they just need enough memory allocated)
   state->fft2_plan = FFTW_PLAN_DFT_2D(N_vertical, N_horizontal,
-                                       state->new_image_time, state->new_image_freq,
-                                       FFTW_FORWARD, FFTW_ESTIMATE);
+                                      state->new_image_time, state->new_image_freq,
+                                      FFTW_FORWARD, FFTW_ESTIMATE);
 
   // Step 6.b: Inverse FFT (the pointers here are dummy, they just need enough memory allocated)
   state->ifft2_plan = FFTW_PLAN_DFT_2D(N_vertical, N_horizontal,
-                                        state->new_image_time, state->new_image_freq,
-                                        FFTW_BACKWARD, FFTW_ESTIMATE);
+                                       state->new_image_time, state->new_image_freq,
+                                       FFTW_BACKWARD, FFTW_ESTIMATE);
+
+  // Testing
+  state->cross_correlation = (REAL *restrict)FFTW_ALLOC_REAL(NhNv);
+  state->Itime             = (REAL *restrict)FFTW_ALLOC_REAL(NhNv);
+  state->Ifreq             = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(state->aux_size);
+  state->Efreq             = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(state->aux_size);
+  state->image_product     = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(state->aux_size);
+
+  state->fftf = fftw_plan_dft_r2c_2d(N_vertical,
+                                     N_horizontal,
+                                     state->Itime,
+                                     state->Ifreq,
+                                     FFTW_ESTIMATE);
+
+  state->ffti = fftw_plan_dft_c2r_2d(N_vertical,
+                                     N_horizontal,
+                                     state->Ifreq,
+                                     state->Itime,
+                                     FFTW_ESTIMATE);
 
   // Step 7: Print basic information to the user
   info("Successfully initialized state object\n");

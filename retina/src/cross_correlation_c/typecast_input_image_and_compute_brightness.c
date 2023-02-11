@@ -32,6 +32,7 @@ REAL typecast_input_image_and_compute_brightness(
 
       // Step 2.c: Write to output array
       state->new_image_time[idx] = value + I*0.0f;
+      state->Itime[idx] = value;
 
       // Step 2.d: Add to total sum
       brightness += value;

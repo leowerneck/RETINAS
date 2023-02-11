@@ -21,13 +21,20 @@ void state_finalize( state_struct *restrict state ) {
   FFTW_FREE(state->new_image_time);
   FFTW_FREE(state->new_image_freq);
   FFTW_FREE(state->ref_image_freq);
+  FFTW_FREE(state->Itime);
+  FFTW_FREE(state->Ifreq);
+  FFTW_FREE(state->Efreq);
+  FFTW_FREE(state->image_product);
+  FFTW_FREE(state->cross_correlation);
 
   // Step 2: Destroy FFT plans
   FFTW_DESTROY_PLAN(state->fft2_plan);
   FFTW_DESTROY_PLAN(state->ifft2_plan);
+  FFTW_DESTROY_PLAN(state->fftf);
+  FFTW_DESTROY_PLAN(state->ffti);
 
   // Step 3: Free memory allocated for the C state struct
   free(state);
 
-  info("Successfully finalized C state object\n");
+  info("Successfully finalized state object\n");
 }

@@ -65,13 +65,18 @@
 #  define FFTW_ALLOC_COMPLEX fftwf_alloc_complex
 #  define FFTW_FREE fftwf_free
 #  define FFTW_PLAN_DFT_2D fftwf_plan_dft_2d
+#  define FFTW_PLAN_DFT_R2C_2D fftwf_plan_dft_r2c_2d
+#  define FFTW_PLAN_DFT_C2R_2D fftwf_plan_dft_c2r_2d
 #  define FFTW_PLAN fftwf_plan
 #  define FFTW_DESTROY_PLAN fftwf_destroy_plan
 #  define FFTW_EXECUTE fftwf_execute
 #  define FFTW_EXECUTE_DFT fftwf_execute_dft
+#  define FFTW_EXECUTE_DFT_R2C(r, c) fftwf_execute_dft_r2c(state->fftf, r, c)
+#  define FFTW_EXECUTE_DFT_C2R(c, r) fftwf_execute_dft_c2r(state->ffti, c, r)
 #  define FFTW_CLEANUP fftwf_cleanup
 #  define CBLAS_GEMM cblas_cgemm
-#  define CBLAS_IAMAX cblas_icamax
+#  define CBLAS_IAMAX_REAL cblas_isamax
+#  define CBLAS_IAMAX_COMPLEX cblas_icamax
 #else
 #  define REAL double
 #  define ROUND round
@@ -88,19 +93,24 @@
 #  define FFTW_ALLOC_COMPLEX fftw_alloc_complex
 #  define FFTW_FREE fftw_free
 #  define FFTW_PLAN_DFT_2D fftw_plan_dft_2d
+#  define FFTW_PLAN_DFT_R2C_2D fftw_plan_dft_r2c_2d
+#  define FFTW_PLAN_DFT_C2R_2D fftw_plan_dft_c2r_2d
 #  define FFTW_PLAN fftw_plan
 #  define FFTW_DESTROY_PLAN fftw_destroy_plan
 #  define FFTW_EXECUTE fftw_execute
 #  define FFTW_EXECUTE_DFT fftw_execute_dft
+#  define FFTW_EXECUTE_DFT_R2C(r, c) fftw_execute_dft_r2c(state->fftf, r, c)
+#  define FFTW_EXECUTE_DFT_C2R(c, r) fftw_execute_dft_c2r(state->ffti, c, r)
 #  define FFTW_CLEANUP fftw_cleanup
 #  define CBLAS_GEMM cblas_zgemm
-#  define CBLAS_IAMAX cblas_izamax
+#  define CBLAS_IAMAX_REAL cblas_idamax
+#  define CBLAS_IAMAX_COMPLEX cblas_izamax
 #endif
 
 // Image analysis parameter struct
 typedef struct state_struct {
   bool shot_noise_method;
-  int N_horizontal, N_vertical;
+  int N_horizontal, N_vertical, aux_size;
   REAL upsample_factor, A0, B1, shift;
   FFTW_PLAN fft2_plan, ifft2_plan;
   COMPLEX *restrict aux_array1;
@@ -110,6 +120,15 @@ typedef struct state_struct {
   COMPLEX *restrict new_image_time;
   COMPLEX *restrict new_image_freq;
   COMPLEX *restrict ref_image_freq;
+
+  // Testing
+  int N_aux;
+  REAL    *restrict Itime;
+  COMPLEX *restrict Ifreq;
+  COMPLEX *restrict Efreq;
+  COMPLEX *restrict image_product;
+  REAL    *restrict cross_correlation;
+  FFTW_PLAN fftf, ffti;
 } state_struct;
 
 // .---------------------.
