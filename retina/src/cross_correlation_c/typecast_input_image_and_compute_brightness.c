@@ -31,7 +31,7 @@ REAL typecast_input_image_and_compute_brightness(
       const REAL value = (REAL)input_array[idx];
 
       // Step 2.c: Write to output array
-      state->new_image_time_domain[idx] = value + I*0.0f;
+      state->new_image_time[idx] = value + I*0.0f;
 
       // Step 2.d: Add to total sum
       brightness += value;

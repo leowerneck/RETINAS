@@ -52,19 +52,19 @@ state_struct *state_initialize(
   state->aux_array3 = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(aux_size);
 
   // Step 5: Allocate memory for the arrays that hold the images
-  state->new_image_time_domain  = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
-  state->new_image_freq_domain  = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
-  state->eigenframe_freq_domain = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
+  state->new_image_time  = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
+  state->new_image_freq  = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
+  state->eigenframe_freq = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
 
   // Step 6: Create the FFT plans
   // Step 6.a: Forward FFT (the pointers here are dummy, they just need enough memory allocated)
   state->fft2_plan = FFTW_PLAN_DFT_2D(N_vertical, N_horizontal,
-                                       state->new_image_time_domain, state->new_image_freq_domain,
+                                       state->new_image_time, state->new_image_freq,
                                        FFTW_FORWARD, FFTW_ESTIMATE);
 
   // Step 6.b: Inverse FFT (the pointers here are dummy, they just need enough memory allocated)
   state->ifft2_plan = FFTW_PLAN_DFT_2D(N_vertical, N_horizontal,
-                                        state->new_image_time_domain, state->new_image_freq_domain,
+                                        state->new_image_time, state->new_image_freq,
                                         FFTW_BACKWARD, FFTW_ESTIMATE);
 
   // Step 7: Print basic information to the user

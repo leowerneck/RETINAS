@@ -106,9 +106,10 @@ typedef struct state_struct {
   COMPLEX *restrict aux_array1;
   COMPLEX *restrict aux_array2;
   COMPLEX *restrict aux_array3;
-  COMPLEX *restrict new_image_time_domain;
-  COMPLEX *restrict new_image_freq_domain;
-  COMPLEX *restrict eigenframe_freq_domain;
+  COMPLEX *restrict reciprocal_new_image_time;
+  COMPLEX *restrict new_image_time;
+  COMPLEX *restrict new_image_freq;
+  COMPLEX *restrict ref_image_freq;
 } state_struct;
 
 // .---------------------.
@@ -178,6 +179,7 @@ void info(const char *format, ...) {
    *  Slightly modified printf which appends the
    *  code name to the beginning of the message.
    */
+
   printf("(RETINA) ");
   va_list args;
   va_start(args, format);

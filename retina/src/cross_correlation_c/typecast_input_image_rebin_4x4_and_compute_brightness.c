@@ -38,7 +38,7 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
         }
       }
       // Step 3.b: Set the binned array to the pixel sum
-      state->new_image_time_domain[(i + state->N_horizontal*j)/4] = bin_value;
+      state->new_image_time[(i + state->N_horizontal*j)/4] = bin_value;
 
       // Step 3.c: Add pixel sum to the total accumulated sum
       brightness += bin_value;

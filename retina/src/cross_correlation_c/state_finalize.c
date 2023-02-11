@@ -18,9 +18,9 @@ void state_finalize( state_struct *restrict state ) {
   FFTW_FREE(state->aux_array1);
   FFTW_FREE(state->aux_array2);
   FFTW_FREE(state->aux_array3);
-  FFTW_FREE(state->new_image_time_domain);
-  FFTW_FREE(state->new_image_freq_domain);
-  FFTW_FREE(state->eigenframe_freq_domain);
+  FFTW_FREE(state->new_image_time);
+  FFTW_FREE(state->new_image_freq);
+  FFTW_FREE(state->eigenframe_freq);
 
   // Step 2: Destroy FFT plans
   FFTW_DESTROY_PLAN(state->fft2_plan);

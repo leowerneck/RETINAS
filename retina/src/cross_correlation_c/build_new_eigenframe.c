@@ -29,9 +29,9 @@ void build_next_eigenframe(
   for(int j=0;j<state->N_vertical;j++) {
     for(int i=0;i<state->N_horizontal;i++) {
       const int idx = i+state->N_horizontal*j;
-      state->eigenframe_freq_domain[idx] =
-        state->A0*state->new_image_freq_domain[idx]*state->aux_array3[idx]
-      + state->B1*state->eigenframe_freq_domain[idx];
+      state->eigenframe_freq[idx] =
+        state->A0*state->new_image_freq[idx]*state->aux_array3[idx]
+      + state->B1*state->eigenframe_freq[idx];
     }
   }
 }
