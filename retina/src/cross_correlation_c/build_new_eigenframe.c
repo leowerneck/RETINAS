@@ -1,21 +1,27 @@
 #include "image_analysis.h"
 
+/*
+ *  Function: build_next_eigenframe
+ *  Author  : Leo Werneck
+ *
+ *  Constructs the next reference image using:
+ *   ref_image_new = A0*new_image_shifted + B1*ref_image_old.
+ *
+ *  Arguments
+ *  ---------
+ *    displacements : in
+ *      Array containing the horizontal and vertical displacements.
+ *
+ *    state : in/out
+ *      The state object (see image_analysis.h).
+ *
+ *  Returns
+ *  -------
+ *    Nothing.
+ */
 void build_next_eigenframe(
     const REAL *restrict displacements,
     state_struct *restrict state ) {
-  /*
-   *  Construct the next reference image using:
-   *   ref_image_new = A0*new_image_shifted + B1*ref_image_old.
-   *
-   *  Inputs
-   *  ------
-   *    displacements : Array containing the horizontal and vertical displacements.
-   *    state         : The C state object, containing the new eigenframe.
-   *
-   *  Returns
-   *  -------
-   *    Nothing.
-   */
 
   // Step 1: Compute the reverse shift matrix
   compute_reverse_shift_matrix(state->N_horizontal,

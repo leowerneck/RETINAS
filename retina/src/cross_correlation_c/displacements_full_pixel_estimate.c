@@ -1,25 +1,23 @@
 #include "image_analysis.h"
 
+/*
+ *  Compute the cross-correlation between the new and reference images.
+ *
+ *  Arguments
+ *  ---------
+ *    state : in
+ *      The state object (see image_analysis.h).
+ *
+ *    displacements : out
+ *      Horizontal and vertical displacements estimated to one pixel.
+ *
+ *  Returns
+ *  -------
+ *    Nothing.
+ */
 void displacements_full_pixel_estimate(
     state_struct *restrict state,
     REAL *restrict displacements ) {
-  /*
-   *  Compute the cross-correlation between the new and reference images.
-   *
-   *  Arguments
-   *  ---------
-   *    Inputs
-   *    ------
-   *      state : The state object, containing the new image
-   *
-   *    Outputs
-   *    -------
-   *      displacements : Estimated to one pixel.
-   *
-   *  Returns
-   *  -------
-   *    Nothing.
-   */
 
   // Step 1: Set auxiliary variables
   const int Nh   = state->N_horizontal;
@@ -37,10 +35,4 @@ void displacements_full_pixel_estimate(
   //         then subtract N_horizontal or N_vertical, accordingly
   if( displacements[0] > Nh/2 ) displacements[0] -= Nh;
   if( displacements[1] > Nv/2 ) displacements[1] -= Nv;
-
-  const int iidx   = CBLAS_IAMAX_REAL(NhNv, state->cross_correlation, 1);
-  const int jj_max = iidx/Nh;
-  const int ii_max = iidx - jj_max*Nh;
-  if( i_max != ii_max || j_max != jj_max )
-    printf("%d %d | %d %d\n", i_max, j_max, ii_max, jj_max);
 }

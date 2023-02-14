@@ -1,25 +1,26 @@
 #include "image_analysis.h"
 
+/*
+ *  Function: displacements_sub_pixel_estimate
+ *  Author  : Leo Werneck
+ *
+ *  Compute the cross-correlation between the new and reference images.
+ *
+ *  Arguments
+ *  ---------
+ *    state : in/out
+ *      The state object (see image_analysis.h).
+ *
+ *    displacements : out
+ *      Horizontal and vertical displacements estimated to less than one pixel.
+ *
+ *  Returns
+ *  -------
+ *    Nothing.
+ */
 void displacements_sub_pixel_estimate(
     state_struct *restrict state,
     REAL *restrict displacements ) {
-  /*
-   *  Compute the cross-correlation between the new and reference images.
-   *
-   *  Arguments
-   *  ---------
-   *    Inputs
-   *    ------
-   *      state : The state object, containing the new image.
-   *
-   *    Outputs
-   *    -------
-   *      displacements : Estimated to less than one pixel.
-   *
-   *  Returns
-   *  -------
-   *    Nothing.
-   */
 
   // Step 1: Set auxiliary variables
   const REAL upsample_factor = state->upsample_factor;

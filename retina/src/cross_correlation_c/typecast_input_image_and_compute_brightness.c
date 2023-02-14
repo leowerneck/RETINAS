@@ -1,21 +1,28 @@
 #include "image_analysis.h"
 
+/*
+ *  Function: typecast_input_image_and_compute_brightness
+ *  Author  : Leo Werneck
+ *
+ *  Typecast the input image from uint16 to REAL. Also compute the
+ *  brightness, which is the sum of all pixel values in the image.
+ *
+ *  Arguments
+ *  ---------
+ *    input_array : in
+ *      Input image stored as a flattened array.
+ *
+ *    state : in/out
+ *      The state object (see image_analysis.h).
+ *
+ *  Returns
+ *  -------
+ *    brightness : out
+ *      The brightness of the image.
+ */
 REAL typecast_input_image_and_compute_brightness(
     const uint16_t *restrict input_array,
     state_struct *restrict state ) {
-  /*
-   *  Typecast the input image from uint16 to REAL. Also compute the
-   *  brightness, which is the sum of all pixel values in the image.
-   *
-   *  Inputs
-   *  ------
-   *    input_array : Input image stored as a 1D array.
-   *    state      : Pointer to the state object.
-   *
-   *  Returns
-   *  -------
-   *     brightness : Brightness of the image.
-   */
 
   // Step 1: Initialize local sum to zero
   REAL brightness = 0.0;
@@ -32,7 +39,6 @@ REAL typecast_input_image_and_compute_brightness(
 
       // Step 2.c: Write to output array
       state->new_image_time[idx] = value + I*0.0f;
-      state->Itime[idx] = value;
 
       // Step 2.d: Add to total sum
       brightness += value;

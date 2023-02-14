@@ -203,10 +203,11 @@ def generate_synthetic_image_data_set(outdir, N_images, n, **kwargs):
     offset                 = kwargs.get("offset"       , 10)
     spread_factor          = kwargs.get("spread_factor", 0.95)
     prefix                 = kwargs.get("prefix"       , "image_")
+    imid = "_w"+str(w)+"_o"+str(offset)
     displacements_filename = \
-        kwargs.get("displacements_filename", "displacements.txt")
+        kwargs.get("displacements_filename", "displacements"+imid+".txt")
     imdir                  = \
-        kwargs.get("imdir", pjoin(outdir, "images_w"+str(w)+"_o"+str(offset)))
+        kwargs.get("imdir", pjoin(outdir, "images"+imid))
 
     # Step 2: Create the output directory
     print(f"(RETINA) Creating output directory {outdir}")

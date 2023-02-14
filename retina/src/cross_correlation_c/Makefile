@@ -2,7 +2,7 @@
 LIBNAME = libretina_c.so
 
 # Library directory path
-LIB_DIR = ../../lib
+LIB_DIR = ../../../lib
 
 # Specify the C compiler
 CC = gcc
@@ -41,7 +41,7 @@ INC := $(wildcard *.h)
 LIB     = $(LIB_DIR)/$(LIBNAME)
 
 SRC_DIR := $(notdir $(shell pwd))
-OBJ_DIR := $(addprefix ../../build/, $(SRC_DIR))
+OBJ_DIR := $(addprefix ../../../build/, $(SRC_DIR))
 
 # Get every file defined in SRC and replace '.c' by '.o'
 OBJ := $(addprefix $(OBJ_DIR)/, $(SRC:.c=.o))

@@ -1,5 +1,35 @@
 #include "image_analysis.h"
 
+/*
+ *  Function: compute_reverse_shift_matrix
+ *  Author  : Leo Werneck
+ *
+ *  Compute the reverse shift matrix.
+ *
+ *  Arguments
+ *  ---------
+ *    N_horizontal : in
+ *      Number of horizontal points in the images.
+ *
+ *    N_vertical : in
+ *      Number of vertical points in the images.
+ *
+ *    displacements : in
+ *      Horizontal and vertical displacements.
+ *
+ *    aux_array1 : in/out
+ *      Empty auxiliary array.
+ *
+ *    aux_array2 : in/out
+ *      Empty auxiliary array.
+ *
+ *    reverse_shift_matrix : out
+ *      The reverse shift matrix.
+ *
+ *  Returns
+ *  -------
+ *    Nothing.
+ */
 void compute_reverse_shift_matrix(
     const int N_horizontal,
     const int N_vertical,
@@ -7,22 +37,6 @@ void compute_reverse_shift_matrix(
     COMPLEX *restrict aux_array1,
     COMPLEX *restrict aux_array2,
     COMPLEX *restrict reverse_shift_matrix ) {
-  /*
-   *  Compute the reverse shift matrix.
-   *
-   *  Inputs
-   *  ------
-   *    N_horizontal         : Number of horizontal points.
-   *    N_vertical           : Number of vertical points.
-   *    displacements        : Horizontal and vertical displacements.
-   *    aux_array1           : Empty auxiliary array.
-   *    aux_array2           : Empty auxiliary array.
-   *    reverse_shift_matrix : Store the result.
-   *
-   *  Returns
-   *  -------
-   *    Nothing.
-   */
 
   // Step 1: Set useful quantities
   const int Nhover2    = N_horizontal/2;

@@ -1,5 +1,36 @@
 #include "image_analysis.h"
 
+/*
+ *  Function: complex_matrix_multiply
+ *  Author  : Leo Werneck
+ *
+ *  Performs the matrix multiplication C = A.B.
+ *  This function uses CBLAS.
+ *
+ *  Inputs
+ *  ------
+ *    m : in
+ *      Common dimension of matrices A and C.
+ *
+ *    p : in
+ *      Common dimension of matrices A and B.
+ *
+ *    n : in
+ *      Common dimension of matrices B and C.
+ *
+ *    A : in
+ *      Flattened matrix of dimension m x p.
+ *
+ *    B : in
+ *      Flattened matrix of dimension p x n.
+ *
+ *    C : out
+ *      Flattened matrix of dimension m x n. Stores the result.
+ *
+ *  Returns
+ *  -------
+ *    Nothing.
+ */
 static inline
 void complex_matrix_multiply(
     const int m,
@@ -8,23 +39,6 @@ void complex_matrix_multiply(
     const void *restrict A,
     const void *restrict B,
     void *restrict C ) {
-  /*
-   *  Performs the matrix multiplication C = A.B. This function
-   *  uses CBLAS.
-   *
-   *  Inputs
-   *  ------
-   *    m : Common dimension of matrices A and C.
-   *    p : Common dimension of matrices A and B.
-   *    n : Common dimension of matrices B and C.
-   *    A : Flattened matrix of dimension m x p.
-   *    B : Flattened matrix of dimension p x n.
-   *    C : Flattened matrix of dimension m x n. Stores the result.
-   *
-   *  Returns
-   *  -------
-   *    Nothing.
-   */
 
   const REAL a[2] = {1.0,0.0};
   const REAL b[2] = {0.0,0.0};
@@ -32,6 +46,37 @@ void complex_matrix_multiply(
              m,n,p,a,A,m,B,p,b,C,m);
 }
 
+/*
+ *  Function: complex_matrix_multiply_tt
+ *  Author  : Leo Werneck
+ *
+ *  Performs the matrix multiplication C = (A.B)^T = BT.AT, where
+ *  AT/BT is the transpose of A/B. This function uses CBLAS.
+ *
+ *  Inputs
+ *  ------
+ *    m : in
+ *      Common dimension of matrices A and C.
+ *
+ *    p : in
+ *      Common dimension of matrices A and B.
+ *
+ *    n : in
+ *      Common dimension of matrices B and C.
+ *
+ *    A : in
+ *      Flattened matrix of dimension m x p. AT is p x m.
+ *
+ *    B : in
+ *      Flattened matrix of dimension p x n. BT is n x p.
+ *
+ *    C : out
+ *      Flattened matrix of dimension n x m. Stores the result.
+ *
+ *  Returns
+ *  -------
+ *    Nothing.
+ */
 static inline
 void complex_matrix_multiply_tt(
     const int m,
@@ -40,23 +85,6 @@ void complex_matrix_multiply_tt(
     const void *restrict A,
     const void *restrict B,
     void *restrict C ) {
-  /*
-   *  Performs the matrix multiplication C = (A.B)^T = BT.AT, where
-   *  AT/BT is the transpose of A/B. This function uses CBLAS.
-   *
-   *  Inputs
-   *  ------
-   *    m : Common dimension of matrices A and C.
-   *    p : Common dimension of matrices A and B.
-   *    n : Common dimension of matrices B and C.
-   *    A : Flattened matrix of dimension m x p. AT is p x m.
-   *    B : Flattened matrix of dimension p x n. BT is n x p.
-   *    C : Flattened matrix of dimension n x m. Stores the result.
-   *
-   *  Returns
-   *  -------
-   *    Nothing.
-   */
 
   const REAL a[2] = {1.0,0.0};
   const REAL b[2] = {0.0,0.0};
@@ -64,22 +92,28 @@ void complex_matrix_multiply_tt(
              n,m,p,a,B,p,A,m,b,C,m);
 }
 
+/*
+ *  Function: upsample_around_displacements
+ *  Author  : Leo Werneck
+ *
+ *  Upsample the region around displacements and recompute
+ *  them with subpixel precision.
+ *
+ *  Inputs
+ *  ------
+ *    state : in/out
+ *      The state object (see image_analysis.h).
+ *
+ *    displacements : in/out
+ *      Horizontal and vertical displacements. Stores the result.
+ *
+ *  Returns
+ *  -------
+ *    Nothing.
+ */
 void upsample_around_displacements(
     state_struct *restrict state,
     REAL *restrict displacements ) {
-  /*
-   *  Upsample the region around displacements and recompute
-   *  them with subpixel precision.
-   *
-   *  Inputs
-   *  ------
-   *    state         : The C state object containing all required data.
-   *    displacements : Array of horizontal and vertical displacements. Stores the result.
-   *
-   *  Returns
-   *  -------
-   *    Nothing.
-   */
 
   // Step 1: Adjust the displacements based on the upsample factor
   const REAL upsample_factor = state->upsample_factor;
@@ -105,42 +139,45 @@ void upsample_around_displacements(
   const int N_horizontal     = state->N_horizontal;
   const int N_vertical       = state->N_vertical;
   const int nhalf_horizontal = FLOOR((N_horizontal-1)/2.0)+1;
+  const int aux_horizontal   = nhalf_horizontal+FLOOR(N_horizontal/2.0);
   const REAL norm_horizontal = 1.0/(N_horizontal*upsample_factor);
-  REAL fft_freq;
-  for(int i_s=0;i_s<S;i_s++) {
-    for(int i_h=0;i_h<N_horizontal;i_h++) {
-      if( i_h < nhalf_horizontal ) {
-        fft_freq = i_h * norm_horizontal;
-      }
-      else {
-        fft_freq = (-FLOOR(N_horizontal/2.0)+i_h-nhalf_horizontal) * norm_horizontal;
-      }
+  for(int i_h=0;i_h<nhalf_horizontal;i_h++) {
+    for(int i_s=0;i_s<S;i_s++) {
+      const REAL fft_freq = i_h * norm_horizontal;
+      const REAL kernel_l = (i_s - sample_region_offset[0])*fft_freq;
+      state->aux_array2[i_s+S*i_h] = CEXP(im2pi * kernel_l);
+    }
+  }
+  for(int i_h=nhalf_horizontal;i_h<N_horizontal;i_h++) {
+    for(int i_s=0;i_s<S;i_s++) {
+      const REAL fft_freq = (i_h - aux_horizontal) * norm_horizontal;
       const REAL kernel_l = (i_s - sample_region_offset[0])*fft_freq;
       state->aux_array2[i_s+S*i_h] = CEXP(im2pi * kernel_l);
     }
   }
 
   // Step 8: Contract the horizontal kernel with the conjugate of the image product
-  for(int i=0;i<N_horizontal*N_vertical;i++) {
+  for(int i=0;i<N_horizontal*N_vertical;i++)
     state->aux_array1[i] = CONJ(state->aux_array1[i]);
-  }
+
   // Note: aux_array1 contains the complex conjugate of the image product,
   //       aux_array2 contains the horizontal kernel, and
   //       aux_array3 will contain the matrix product of aux_array2 and aux_array1.
-  complex_matrix_multiply(S,N_horizontal, N_vertical,
+  complex_matrix_multiply(S, N_horizontal, N_vertical,
                           state->aux_array2, state->aux_array1, state->aux_array3);
 
-  // Step 9: Compute the vertical kernel
+  // Step 9: Compute the vertical kernel (Nv x S)
   const int nhalf_vertical = FLOOR((N_vertical-1)/2.0)+1;
+  const int aux_vertical   = nhalf_vertical+FLOOR(N_vertical/2.0);
   const REAL norm_vertical = 1.0/(N_vertical*upsample_factor);
   for(int i_s=0;i_s<S;i_s++) {
-    for(int i_v=0;i_v<N_vertical;i_v++) {
-      if( i_v < nhalf_vertical ) {
-        fft_freq = i_v * norm_vertical;
-      }
-      else {
-        fft_freq = (-FLOOR(N_vertical/2.0)+i_v-nhalf_vertical) * norm_vertical;
-      }
+    for(int i_v=0;i_v<nhalf_vertical;i_v++) {
+      const REAL fft_freq = i_v * norm_vertical;
+      const REAL kernel_l = (i_s - sample_region_offset[1])*fft_freq;
+      state->aux_array2[i_v+N_vertical*i_s] = CEXP(im2pi * kernel_l);
+    }
+    for(int i_v=nhalf_vertical;i_v<N_vertical;i_v++) {
+      const REAL fft_freq = (i_v - aux_vertical) * norm_vertical;
       const REAL kernel_l = (i_s - sample_region_offset[1])*fft_freq;
       state->aux_array2[i_v+N_vertical*i_s] = CEXP(im2pi * kernel_l);
     }

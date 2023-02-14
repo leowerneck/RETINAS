@@ -1,5 +1,40 @@
 #include "image_analysis.h"
 
+/*
+ *  Function: state_initialize
+ *  Author  : Leo Werneck
+ *
+ *  Initialize a new state object (see image_analysis.h).
+ *
+ *  Arguments
+ *  ---------
+ *    N_horizontal : in
+ *      Number of horizontal points in the images.
+
+ *    N_vertical : in
+ *      Number of vertical points in the images.
+
+ *    upsample_factor : in
+ *      Upsampling factor.
+
+ *    A0 : in
+ *      See description for B1 below.
+
+ *    B1 : in
+ *      The new eigenframe is computed according to
+ *       eigenframe = A0*new_image + B1*eigenframe.
+ *
+ *    shot_noise_method : in
+ *      Whether or not to use the shot noise method.
+ *
+ *    shift : in
+ *      Shift to apply to the images before taking their reciprocal (only used
+ *      if shot noise method is enabled).
+ *
+ *  Returns
+ *  -------
+ *    state : The state object, fully initialized.
+ */
 state_struct *state_initialize(
       const int N_horizontal,
       const int N_vertical,
@@ -8,22 +43,6 @@ state_struct *state_initialize(
       const REAL B1,
       const bool shot_noise_method,
       const REAL shift ) {
-  /*
-   *  Create a new C state object.
-   *
-   *  Inputs
-   *  ------
-   *    N_horizontal    : Number of horizontal points in the images.
-   *    N_vertical      : Number of vertical points in the images.
-   *    upsample_factor : Upsampling factor.
-   *    A0              : See description for B1 below.
-   *    B1              : The new eigenframe is computed according to
-   *                      eigenframe = A0*new_image + B1*eigenframe.
-   *
-   *  Returns
-   *  -------
-   *    state           : The state object, fully initialized.
-   */
 
   info("Initializing state object.\n");
   info("  Parameters:\n");
@@ -41,8 +60,6 @@ state_struct *state_initialize(
   // Step 2: Copy Python parameters to the C state struct
   state->N_horizontal      = N_horizontal;
   state->N_vertical        = N_vertical;
-  state->N_aux             = N_horizontal/2+1;
-  state->aux_size          = state->N_aux * state->N_vertical;
   state->upsample_factor   = upsample_factor;
   state->A0                = A0;
   state->B1                = B1;
@@ -74,25 +91,6 @@ state_struct *state_initialize(
   state->ifft2_plan = FFTW_PLAN_DFT_2D(N_vertical, N_horizontal,
                                        state->new_image_time, state->new_image_freq,
                                        FFTW_BACKWARD, FFTW_ESTIMATE);
-
-  // Testing
-  state->cross_correlation = (REAL *restrict)FFTW_ALLOC_REAL(NhNv);
-  state->Itime             = (REAL *restrict)FFTW_ALLOC_REAL(NhNv);
-  state->Ifreq             = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(state->aux_size);
-  state->Efreq             = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(state->aux_size);
-  state->image_product     = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(state->aux_size);
-
-  state->fftf = fftw_plan_dft_r2c_2d(N_vertical,
-                                     N_horizontal,
-                                     state->Itime,
-                                     state->Ifreq,
-                                     FFTW_ESTIMATE);
-
-  state->ffti = fftw_plan_dft_c2r_2d(N_vertical,
-                                     N_horizontal,
-                                     state->Ifreq,
-                                     state->Itime,
-                                     FFTW_ESTIMATE);
 
   // Step 7: Print basic information to the user
   info("Successfully initialized state object\n");

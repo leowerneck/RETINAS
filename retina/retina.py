@@ -248,8 +248,8 @@ class retina:
         """
 
         if self.first_image:
-            # new_image, h_0, v_0 = \
-                # center_array_max_return_displacements(new_image, real=self.real)
+            new_image, h_0, v_0 = \
+                center_array_max_return_displacements(new_image, real=self.real)
 
             brightness = self.lib_typecast_input_image_and_compute_brightness(
                 cast(new_image.ctypes.data, self.c_uint16_p), self.state)
