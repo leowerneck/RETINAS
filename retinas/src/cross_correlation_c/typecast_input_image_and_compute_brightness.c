@@ -1,4 +1,4 @@
-#include "retina.h"
+#include "retinas.h"
 
 /*
  *  Function: typecast_input_image_and_compute_brightness
@@ -13,7 +13,7 @@
  *      Input image stored as a flattened array.
  *
  *    state : in/out
- *      The state object (see retina.h).
+ *      The state object (see retinas.h).
  *
  *  Returns
  *  -------

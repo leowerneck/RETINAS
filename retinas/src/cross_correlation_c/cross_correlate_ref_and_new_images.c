@@ -1,4 +1,4 @@
-#include "retina.h"
+#include "retinas.h"
 
 /*
  *  Function: cross_correlate_ref_and_new_images
@@ -10,7 +10,7 @@
  *  Arguments
  *  ---------
  *    state : in/out
- *      The state object (see retina.h).
+ *      The state object (see retinas.h).
  *
  *  Returns
  *  -------

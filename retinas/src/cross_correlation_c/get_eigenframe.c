@@ -1,4 +1,4 @@
-#include "retina.h"
+#include "retinas.h"
 
 /*
  *  Function: get_eigenframe
@@ -9,7 +9,7 @@
  *  Arguments
  *  ---------
  *    state : in
- *      The state object (see retina.h).
+ *      The state object (see retinas.h).
  *
  *    eigenframe : out
  *      Real array that stores the eigenframe.

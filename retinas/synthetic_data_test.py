@@ -14,7 +14,8 @@ def rel_err(a, b):
 def abs_err(a, b):
     return fabs(a-b)
 
-libpath         = pjoin("..", "lib", "libretina_c.so")
+libpath         = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas_cuda.so")
+# libpath         = pjoin("..", "lib", "libretina_cuda.so")
 N_horizontal    = 256
 N_vertical      = 128
 upsample_factor = 10
@@ -26,10 +27,11 @@ w               = 8
 spread_factor   = 0.95
 outdir          = "out"
 N_images        = 1000
-imdir           = generate_synthetic_image_data_set(outdir, N_images,
-                                                    (N_horizontal,N_vertical),
-                                                    A=A, w=w, offset=offset,
-                                                    spread_factor=spread_factor)
+# imdir           = generate_synthetic_image_data_set(outdir, N_images,
+                                                    # (N_horizontal,N_vertical),
+                                                    # A=A, w=w, offset=offset,
+                                                    # spread_factor=spread_factor)
+imdir = "out/images_w8_o5.76"
 
 r = retina(libpath, N_horizontal, N_vertical, upsample_factor, time_constant, precision="double")
 print("(RETINA) Beginning image processing")

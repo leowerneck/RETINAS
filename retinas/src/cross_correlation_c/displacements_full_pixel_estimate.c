@@ -1,4 +1,4 @@
-#include "retina.h"
+#include "retinas.h"
 
 /*
  *  Compute the cross-correlation between the new and reference images.
@@ -6,7 +6,7 @@
  *  Arguments
  *  ---------
  *    state : in
- *      The state object (see retina.h).
+ *      The state object (see retinas.h).
  *
  *    displacements : out
  *      Horizontal and vertical displacements estimated to one pixel.

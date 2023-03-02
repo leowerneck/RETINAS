@@ -1,4 +1,4 @@
-#include "retina.h"
+#include "retinas.h"
 
 /*
  *  Function: build_next_eigenframe
@@ -13,7 +13,7 @@
  *      Array containing the horizontal and vertical displacements.
  *
  *    state : in/out
- *      The state object (see retina.h).
+ *      The state object (see retinas.h).
  *
  *  Returns
  *  -------
