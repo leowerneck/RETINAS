@@ -1,0 +1,66 @@
+project('RETINAS',
+        @languages@,
+        default_options : ['buildtype=plain'],
+        version : '0.1.0',
+        license : 'BSD-2-Clause license')
+
+with_c = get_option('with-c')
+with_cuda = get_option('with-cuda')
+
+subdir('retinas')
+
+if with_c or with_cuda
+  # Set the libraries' header files
+  install_headers(headers, subdir : 'retinas')
+endif
+
+# .-----------------.
+# | C Library Build |
+# .-----------------.
+if get_option('with-c')
+
+  message('Checking dependencies for C library')
+
+  # The C compiler
+  cc = meson.get_compiler('c')
+
+  # C library dependencies
+  dep_math = cc.find_library('m', required : true)
+  dep_fftw = dependency('fftw3')
+  dep_blas = dependency('blas')
+
+  # The C library
+  lib_c_srcs = [c_srcs]
+  c_args = ['-O3', '-march=native', '-std=gnu99']
+  lib_c = library('retinas', lib_c_srcs,
+                  include_directories : [c_inc_dir],
+                  implicit_include_directories : true,
+                  dependencies : [dep_math, dep_fftw, dep_blas],
+                  c_args : c_args,
+                  install : true)
+endif
+
+# .--------------------.
+# | CUDA Library Build |
+# .--------------------.
+if get_option('with-cuda')
+
+  message('Checking dependencies for CUDA library')
+
+  # The CUDA compiler
+  nvcc = meson.get_compiler('cuda')
+
+  # CUDA library dependencies
+  dep_cuda = dependency('cuda', version : '>=10', modules : ['cublas', 'cufft'])
+
+  # The CUDA library
+  lib_cuda_srcs = [cuda_srcs]
+  cuda_args = ['-Xptxas=-O3', '-arch=native', '-O3', '-Xcompiler=-march=native']
+  lib_cuda = library('retinas_cuda', lib_cuda_srcs,
+                     include_directories : [cuda_inc_dir],
+                     implicit_include_directories : true,
+                     dependencies : [dep_cuda],
+                     cuda_args : cuda_args,
+                     install : true)
+
+endif

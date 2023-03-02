@@ -1,0 +1,9 @@
+option('with-c',
+       type : 'boolean',
+       value : true,
+       description : 'build the C library')
+
+option('with-cuda',
+       type : 'boolean',
+       value : true,
+       description : 'build the CUDA library')
