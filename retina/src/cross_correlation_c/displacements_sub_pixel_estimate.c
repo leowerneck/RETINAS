@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retina.h"
 
 /*
  *  Function: displacements_sub_pixel_estimate
@@ -9,7 +9,7 @@
  *  Arguments
  *  ---------
  *    state : in/out
- *      The state object (see image_analysis.h).
+ *      The state object (see retina.h).
  *
  *    displacements : out
  *      Horizontal and vertical displacements estimated to less than one pixel.

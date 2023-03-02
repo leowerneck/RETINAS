@@ -1,10 +1,10 @@
-#include "image_analysis.h"
+#include "retina.h"
 
 /*
  *  Function: state_initialize
  *  Author  : Leo Werneck
  *
- *  Initialize a new state object (see image_analysis.h).
+ *  Initialize a new state object (see retina.h).
  *
  *  Arguments
  *  ---------

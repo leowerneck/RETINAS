@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retina.h"
 
 /*
  *  Function: set_zeroth_eigenframe
@@ -9,7 +9,7 @@
  *  Arguments
  *  ---------
  *    state : in/out
- *      The state object (see image_analysis.h).
+ *      The state object (see retina.h).
  *
  *  Returns
  *  -------

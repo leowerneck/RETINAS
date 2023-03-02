@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retina.h"
 
 /*
  *  Function: complex_matrix_multiply
@@ -102,7 +102,7 @@ void complex_matrix_multiply_tt(
  *  Inputs
  *  ------
  *    state : in/out
- *      The state object (see image_analysis.h).
+ *      The state object (see retina.h).
  *
  *    displacements : in/out
  *      Horizontal and vertical displacements. Stores the result.

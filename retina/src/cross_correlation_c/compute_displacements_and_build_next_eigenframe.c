@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retina.h"
 
 /*
  *  Function: compute_displacements_and_build_next_eigenframe
@@ -9,7 +9,7 @@
  *  Arguments
  *  ---------
  *    state : in/out
- *      The state object (see image_analysis.h).
+ *      The state object (see retina.h).
  *
  *    displacements : out
  *      Stores the horizontal and vertical displacements.
