@@ -31,7 +31,7 @@ static void shift_image_add_to_eigenframe_gpu(
   int tid    = threadIdx.x + blockIdx.x*blockDim.x;
   int stride = blockDim.x*gridDim.x;
   for(int i=tid;i<N_horizontal*N_vertical;i+=stride) {
-    const COMPLEX product = CMUL(new_image_freq[i],reverse_shifts[i]);
+    const COMPLEX product = CMUL(new_image_freq[i], reverse_shifts[i]);
     eigenframe_freq[i].x  = A0*product.x + B1*eigenframe_freq[i].x;
     eigenframe_freq[i].y  = A0*product.y + B1*eigenframe_freq[i].y;
   }

@@ -1,4 +1,4 @@
-""" Utility functions for the RETINA toolkit """
+""" Utility functions for the RETINAS toolkit """
 
 from os import makedirs
 from os.path import join as pjoin
@@ -6,7 +6,7 @@ from shutil import rmtree
 from time import time
 from ctypes import c_int, POINTER
 from numpy import unravel_index, argmax, rint, roll
-from numpy import mgrid, sqrt
+from numpy import mgrid, sqrt, uint16, pi, multiply, array, exp, outer
 from numpy.random import random, poisson
 from scipy.special import erf
 
@@ -51,15 +51,15 @@ def setup_library_function(func, params, returns):
     func.argtypes = params
     func.restype  = returns
 
-def center_array_max_return_displacements(image_array, real=float):
+def center_array_max_return_displacements(image_array):
     """ Fast recentering of an image array around the maximum pixel """
 
     shape   = image_array.shape
     ind_max = unravel_index(argmax(image_array, axis=None), shape)
     move_0  = int(rint(shape[0]/2 - (ind_max[0]+0.5)+0.1))
     move_1  = int(rint(shape[1]/2 - (ind_max[1]+0.5)+0.1))
-    h_0     = real(-move_1)
-    v_0     = real(-move_0)
+    h_0     = -move_1
+    v_0     = -move_0
     return roll(image_array, (move_0,move_1), axis=(0,1)), h_0, v_0
 
 def Gaussian_image(n, w=1, A=4095, c=(0,0), offset=0):
@@ -210,13 +210,13 @@ def generate_synthetic_image_data_set(outdir, N_images, n, **kwargs):
         kwargs.get("imdir", pjoin(outdir, "images"+imid))
 
     # Step 2: Create the output directory
-    print(f"(RETINA) Creating output directory {outdir}")
+    print(f"(RETINAS) Creating output directory {outdir}")
     rmtree(outdir, ignore_errors=True)
-    print(f"(RETINA) Creating image output directory {imdir}")
+    print(f"(RETINAS) Creating image output directory {imdir}")
     makedirs(imdir)
 
     # Step 3: Generate the images and displacements.txt files
-    print("(RETINA) Beginning image generation")
+    print("(RETINAS) Beginning image generation")
     start = time()
     with open(pjoin(outdir, displacements_filename), "w", encoding="ascii") as f:
         c = (0,0)
@@ -229,9 +229,79 @@ def generate_synthetic_image_data_set(outdir, N_images, n, **kwargs):
             Poisson_image((n[0],n[1]), A=A, w=w, c=c).tofile(
                 pjoin(imdir, prefix + f"{i+1:02d}.bin"), format="%u")
             if not i%(N_images/5):
-                print(f"(RETINA) Finished generating image {i:05d} out of {N_images:05d}")
+                print(f"(RETINAS) Finished generating image {i:05d} out of {N_images:05d}")
 
     # All done!
-    print(f"(RETINA) Finished generating {N_images} images")
-    print(f"(RETINA) of size {n} in {time()-start:.1f} seconds")
+    print(f"(RETINAS) Finished generating {N_images} images of size {n} in {time()-start:.1f} seconds")
     return imdir
+
+def rebin(im, f, dtype=uint16):
+    """
+    Rebins an image by a factor f. If the original image has shape (m, n), then
+    the rebinned image will have size (m/f, n/f). We do not check whether or not
+    f divides m and n. The new "superpixels" in the rebinned image contain the
+    sum of regions of size (f, f).
+
+    Inputs
+    ------
+      im : ndarray
+        Input image if size (m, n).
+
+      f : int
+        Rebinning factor.
+
+    Returns
+    -------
+      im_out : ndarray
+        Output image if size (m/f, n/f).
+    """
+
+    shape = (im.shape[0]//f, f, im.shape[1]//f, f)
+    return im.reshape(shape).sum(axis=(-1,1), dtype=dtype)
+
+def freq_shift(new_frame_freq, horizontal_translation, vertical_translation, N_horizontal, N_vertical):
+    """
+    .------------.
+    | freq_shift |
+    .------------.
+
+    This function shifts a given frame onto our eigenframe in the Fourier domain.
+
+    Function inputs:
+        - new_frame_freq    : Current frame data in Fourier Domain
+        - nz                : Number of pixels in z-direction
+        - ny                : Number of pixels in y-direction
+    Function output:
+        - the current (present) frame shifted onto our currentz eigenframe
+    """
+    #Initialize shift arrays.
+    shift_horizontal = []
+    shift_vertical = []
+
+    # No negative in exp() since we're shifting *back* to the first frame.
+    #             The if condition is used to match the weird array format in the Matlab code.
+    #             Note also that Matlab starts index arrays at 1 rather than 0.
+    for i_vertical in range(N_vertical):
+        if i_vertical < N_vertical/2:
+            shift_vertical.append(exp(2.*pi*complex(0,1)*vertical_translation*(i_vertical/N_vertical)))
+        else:
+            shift_vertical.append(exp(2.*pi*complex(0,1)*vertical_translation*((i_vertical-N_vertical)/N_vertical)))
+    shift_vertical = array(shift_vertical)
+    conjugate_index = int(N_vertical/2)
+    shift_vertical[conjugate_index] = shift_vertical[conjugate_index].real
+
+    for i_horizontal in range(N_horizontal):
+        if i_horizontal < N_horizontal/2:
+            shift_horizontal.append(exp(2.*pi*complex(0,1)*horizontal_translation*(i_horizontal/N_horizontal)))
+        else:
+            shift_horizontal.append(exp(2.*pi*complex(0,1)*horizontal_translation*((i_horizontal-N_horizontal)/N_horizontal)))
+    shift_horizontal = array(shift_horizontal)
+    conjugate_index = int(N_horizontal/2)
+    shift_horizontal[conjugate_index] = shift_horizontal[conjugate_index].real
+
+    #Again, on small examples the Matlab code is actually doing an outer product.
+    shift_all = outer(shift_vertical, shift_horizontal)
+
+    #Create the phase-shifted frame.
+    shifted_frame = multiply(new_frame_freq, shift_all)
+    return shifted_frame

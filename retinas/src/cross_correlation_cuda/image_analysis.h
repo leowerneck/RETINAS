@@ -145,7 +145,7 @@ void info(const char *format, ...) {
    *  Slightly modified printf which appends the
    *  code name to the beginning of the message.
    */
-  printf("(RETINA) ");
+  printf("(RETINAS) ");
   va_list args;
   va_start(args, format);
   vprintf(format, args);

@@ -53,10 +53,12 @@ void compute_reverse_shift_matrix(
     aux_array1[i        ] = CEXP(aux_h*i*oneoverNh);
     aux_array1[i+Nhover2] = CEXP(aux_h*((i+Nhover2)*oneoverNh-1));
   }
+  aux_array1[Nhover2] = CREAL(aux_array1[Nhover2]);
   for(int j=0;j<Nvover2;j++) {
     aux_array2[j        ] = CEXP(aux_v*j*oneoverNv);
     aux_array2[j+Nvover2] = CEXP(aux_v*((j+Nvover2)*oneoverNv-1));
   }
+  aux_array2[Nvover2] = CREAL(aux_array2[Nvover2]);
 
   // Step 3: Compute the displacement matrix
   for(int j=0;j<N_vertical;j++) {
@@ -66,5 +68,4 @@ void compute_reverse_shift_matrix(
       reverse_shift_matrix[i+N_horizontal*j] = shift_horizontal*shift_vertical;
     }
   }
-  reverse_shift_matrix[Nhover2+N_horizontal*Nvover2] = CREAL(reverse_shift_matrix[Nhover2+N_horizontal*Nvover2]);
 }
