@@ -83,3 +83,21 @@ The following are a list of dependency for different implementations of
   * [Python 3](https://www.python.org/)
   * [NumPy](https://numpy.org/)
   * [SciPy](https://scipy.org/)
+
+## Synthetic data test
+
+To run the synthetic data test on `Linux` you can run:
+
+```shell
+./configure --prefix=`pwd` --with-cuda=yes
+make
+make install
+cd retinas
+python synthetic_data_test.py
+```
+
+It should take a few minutes for the test to complete. Some progress information will be printed periodically. Once the test finishes, the following files will be generated:
+
+1. `diagnostics.txt`: contains a nearly formatted output for all three implementations of the code (`C`, `CUDA`, and `Python`).
+2. `out/displacements_w8_o5.76.txt`: contains the analytic displacements
+3. `out/results.txt`: contains the numerical displacements for all three implementations
