@@ -195,7 +195,7 @@ void info(const char *format, ...) {
    *  code name to the beginning of the message.
    */
 
-  printf("(RETINA) ");
+  printf("(RETINAS) ");
   va_list args;
   va_start(args, format);
   vprintf(format, args);

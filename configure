@@ -38,6 +38,7 @@ def parse_cmd_args():
     parser.add_argument("--default-library"           , default="static"    , help="library type [static, shared, both]")
     parser.add_argument("--with-c"   , choices=["yes", "no"], default="yes" , help="whether or not to compile the C library [default yes]")
     parser.add_argument("--with-cuda", choices=["yes", "no"], default="no"  , help="whether or not to compile the CUDA library [default no]")
+    parser.add_argument("--blas"                      , default="blas"      , help="BLAS library")
 
     return parser.parse_args()
 
@@ -107,8 +108,9 @@ def meson_build(args):
 
     # Check whether or not to build the C library
     cuda_lib = "-Dwith-cuda=true" if args.with_cuda=="yes" else "-Dwith-cuda=false"
+    blas_lib = "-Dblas_lib="+args.blas
 
-    cmdargs = [args.meson, "setup", args.builddir, c_lib, cuda_lib]
+    cmdargs = [args.meson, "setup", args.builddir, c_lib, cuda_lib, blas_lib]
     if exists(args.builddir):
         cmdargs += ["--reconfigure"]
     if args.prefix is not None:

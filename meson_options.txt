@@ -7,3 +7,8 @@ option('with-cuda',
        type : 'boolean',
        value : true,
        description : 'build the CUDA library')
+
+option('blas_lib',
+       type : 'string',
+       value : 'blas',
+       description : 'BLAS library name')

@@ -6,6 +6,7 @@ project('RETINAS',
 
 with_c = get_option('with-c')
 with_cuda = get_option('with-cuda')
+blas_lib = get_option('blas_lib')
 
 subdir('retinas')
 
@@ -26,8 +27,59 @@ if get_option('with-c')
 
   # C library dependencies
   dep_math = cc.find_library('m', required : true)
-  dep_fftw = dependency('fftw3')
-  dep_blas = dependency('blas')
+
+  ###################
+  # FFTW dependency #
+  ###################
+  dep_fftw  = dependency('fftw3', required : true)
+  dep_fftwf = dependency('fftw3f', required : true)
+
+  fftw_types = ['@0@_complex', '@0@_plan']
+  foreach type : fftw_types
+    if not cc.has_type(type.format('fftw'), prefix : '#include <fftw3.h>', dependencies : dep_fftw)
+      error('FFTW3 library does not have type @0@'.format(func.format('fftw')))
+    endif
+    if not cc.has_type(type.format('fftwf'), prefix : '#include <fftw3.h>', dependencies : dep_fftwf)
+      error('FFTW3 library does not have type @0@'.format(func.format('fftwf')))
+    endif
+  endforeach
+
+  fftw_funcs = ['@0@_alloc_real' , '@0@_alloc_complex', '@0@_free',
+                '@0@_plan_dft_2d', '@0@_destroy_plan' , '@0@_execute',
+                '@0@_execute_dft', '@0@_cleanup']
+  foreach func : fftw_funcs
+    if not cc.has_function(func.format('fftw'), prefix : '#include <fftw3.h>', dependencies : dep_fftw)
+      error('FFTW3 library does not have function @0@'.format(func.format('fftw')))
+    endif
+    if not cc.has_function(func.format('fftwf'), prefix : '#include <fftw3.h>', dependencies : dep_fftwf)
+      error('FFTW3 library does not have function @0@'.format(func.format('fftwf')))
+    endif
+  endforeach
+
+  ###################
+  # BLAS dependency #
+  ###################
+  dep_blas = dependency(blas_lib, disabler : true, required : false)
+  if is_disabler(dep_blas)
+    blas_opts = ['blas', 'openblas', 'blis']
+    foreach blas : blas_opts
+      dep_blas = dependency(blas, disabler : true, required : false)
+      if not is_disabler(dep_blas)
+        break
+      endif
+    endforeach
+    if is_disabler(dep_blas)
+      error('BLAS dependency not found')
+    endif
+  endif
+
+  blas_funcs = ['cblas_cgemm', 'cblas_isamax', 'cblas_icamax',
+                'cblas_zgemm', 'cblas_idamax', 'cblas_izamax']
+  foreach func : blas_funcs
+    if not cc.has_function(func, prefix : '#include <cblas.h>', dependencies : dep_blas)
+      error('BLAS library does not have function @0@'.format(func))
+    endif
+  endforeach
 
   # The C library
   lib_c_srcs = [c_srcs]
