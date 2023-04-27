@@ -55,9 +55,9 @@ class Pyretinas:
         self.reciprocal_new_image_freq = fft2(reciprocal(new_image+self.offset, dtype=float64))
         return new_image.sum(dtype=float64)
 
-    def set_zeroth_reference_image_cc(self) -> None:
+    def set_first_reference_image_cc(self) -> None:
         """
-        Set the zeroth reference_image in the cross-correlation algorithm.
+        Set the first reference image in the cross-correlation algorithm.
 
         Inputs
         ------
@@ -69,9 +69,9 @@ class Pyretinas:
         """
         self.ref_image_freq = self.new_image_freq
 
-    def set_zeroth_reference_image_shot_noise(self) -> None:
+    def set_first_reference_image_shot_noise(self) -> None:
         """
-        Set the zeroth reference_image in the shot noise algorithm.
+        Set the first reference image in the shot noise algorithm.
 
         Inputs
         ------
@@ -89,7 +89,7 @@ class Pyretinas:
 
         Inputs
         ------
-          Nothing.
+          None.
 
         Returns
         -------
@@ -104,7 +104,7 @@ class Pyretinas:
 
         Inputs
         ------
-          Nothing.
+          None.
 
         Returns
         -------
@@ -288,6 +288,115 @@ class Pyretinas:
         self.reciprocal_ref_image_freq = self.A0*new_image_shifted + \
                                          self.B1*self.reciprocal_ref_image_freq
 
+    def add_new_image_to_sum_cc(
+            self, displacements : ndarray) -> None:
+        """
+        Shift the new image and add it to the running sum.
+
+        Inputs
+        ------
+          displacements : array-like object
+            Contains the displacements.
+
+        Returns
+        -------
+          Nothing.
+        """
+
+        self.image_counter  += 1
+        self.image_sum_freq += freq_shift(self.new_image_freq,
+                                          displacements[0], displacements[1],
+                                          self.N_horizontal, self.N_vertical)
+
+    def add_new_image_to_sum_shot_noise(
+            self, displacements : ndarray) -> None:
+
+        """
+        Shift the new image and add it to the running sum.
+
+        Inputs
+        ------
+          displacements : array-like object
+            Contains the displacements.
+
+        Returns
+        -------
+          Nothing.
+        """
+
+        self.image_counter  += 1
+        self.image_sum_freq += freq_shift(self.reciprocal_new_image_freq,
+                                          displacements[0], displacements[1],
+                                          self.N_horizontal, self.N_vertical)
+
+    def update_reference_image_from_image_sum_cc(self) -> None:
+        """
+        Update the reference image based on the image sum. Then reset the image
+        sum to the new reference image and reset the image counter to one.
+
+        Inputs
+        ------
+          None.
+
+        Returns
+        -------
+          Nothing.
+        """
+
+        self.ref_image_freq = self.image_sum_freq/self.image_counter
+        self.image_sum_freq = self.ref_image_freq
+        self.image_counter  = 1
+
+    def update_reference_image_from_image_sum_shot_noise(self) -> None:
+        """
+        Update the reference image based on the image sum. Then reset the image
+        sum to the new reference image and reset the image counter to one.
+
+        Inputs
+        ------
+          None.
+
+        Returns
+        -------
+          Nothing.
+        """
+
+        self.reciprocal_ref_image_freq = self.image_sum_freq/self.image_counter
+        self.image_sum_freq            = self.reciprocal_ref_image_freq
+        self.image_counter             = 1
+
+    def compute_displacements_and_add_image_to_sum(self) -> ndarray:
+        """
+        Compute the displacements and add new image to the sum.
+
+        Inputs
+        ------
+          None.
+
+        Returns
+        -------
+          displacements : NumPy array
+            NumPy array containing the displacements.
+        """
+
+        if self.first_image:
+            self.first_image = False
+            self.set_first_reference_image()
+            if self.shot_noise:
+                self.image_sum_freq = self.reciprocal_ref_image_freq
+            else:
+                self.image_sum_freq = self.ref_image_freq
+            return array([self.h_0, self.v_0])
+
+        displacements = array([0, 0], dtype=float64)
+        self.cross_correlate_ref_and_new_images()
+        self.displacements_full_pixel_estimate(displacements)
+        self.upsample_around_displacements(displacements)
+        self.displacements_sub_pixel_estimate(displacements)
+        self.add_new_image_to_sum(displacements)
+
+        return displacements
+
 
     def compute_displacements_and_update_ref_image(self) -> ndarray:
         """
@@ -305,7 +414,7 @@ class Pyretinas:
 
         if self.first_image:
             self.first_image = False
-            self.set_zeroth_reference_image()
+            self.set_first_reference_image()
             return array([self.h_0, self.v_0])
 
         displacements = array([0, 0], dtype=float64)
@@ -349,7 +458,6 @@ class Pyretinas:
           offset : float64
             Amount to offset new images before taking their reciprocal
             when the shot noise method is enabled (default=0).
-
         """
 
         self.N_horizontal      = N_horizontal
@@ -366,9 +474,11 @@ class Pyretinas:
         self.image_product     = zeros((N_vertical, N_horizontal), dtype=complex)
         self.cross_correlation = zeros((N_vertical, N_horizontal), dtype=complex)
         self.upsampled_image   = zeros((N_vertical, N_horizontal), dtype=complex)
+        self.image_sum_freq    = zeros((N_vertical, N_horizontal), dtype=complex)
         self.first_image       = True
         self.h_0               = 0
         self.v_0               = 0
+        self.image_counter     = 1
 
         if not shot_noise:
             self.new_image_freq = zeros((N_vertical, N_horizontal), dtype=complex)
@@ -376,11 +486,13 @@ class Pyretinas:
 
             self.preprocess_new_image_and_compute_brightness = \
                 self.preprocess_new_image_and_compute_brightness_cc
-            self.set_zeroth_reference_image         = self.set_zeroth_reference_image_cc
-            self.cross_correlate_ref_and_new_images = self.cross_correlate_ref_and_new_images_cc
-            self.displacements_full_pixel_estimate  = self.displacements_full_pixel_estimate_cc
-            self.displacements_sub_pixel_estimate   = self.displacements_sub_pixel_estimate_cc
-            self.update_reference_image             = self.update_reference_image_cc
+            self.set_first_reference_image             = self.set_first_reference_image_cc
+            self.cross_correlate_ref_and_new_images    = self.cross_correlate_ref_and_new_images_cc
+            self.displacements_full_pixel_estimate     = self.displacements_full_pixel_estimate_cc
+            self.displacements_sub_pixel_estimate      = self.displacements_sub_pixel_estimate_cc
+            self.update_reference_image                = self.update_reference_image_cc
+            self.add_new_image_to_sum                  = self.add_new_image_to_sum_cc
+            self.update_reference_image_from_image_sum = self.update_reference_image_from_image_sum_cc
 
         else:
             self.squared_new_image_freq    = zeros((N_vertical, N_horizontal), dtype=complex)
@@ -388,12 +500,14 @@ class Pyretinas:
             self.reciprocal_ref_image_freq = zeros((N_vertical, N_horizontal), dtype=complex)
 
             self.preprocess_new_image_and_compute_brightness = \
-                self.preprocess_new_image_and_compute_brightness_noise
-            self.set_zeroth_reference_image         = self.set_zeroth_reference_image_shot_noise
-            self.cross_correlate_ref_and_new_images = self.cross_correlate_ref_and_new_images_shot_noise
-            self.displacements_full_pixel_estimate  = self.displacements_full_pixel_estimate_shot_noise
-            self.displacements_sub_pixel_estimate   = self.displacements_sub_pixel_estimate_shot_noise
-            self.update_reference_image             = self.update_reference_image_shot_noise
+                self.preprocess_new_image_and_compute_brightness_shot_noise
+            self.set_first_reference_image             = self.set_first_reference_image_shot_noise
+            self.cross_correlate_ref_and_new_images    = self.cross_correlate_ref_and_new_images_shot_noise
+            self.displacements_full_pixel_estimate     = self.displacements_full_pixel_estimate_shot_noise
+            self.displacements_sub_pixel_estimate      = self.displacements_sub_pixel_estimate_shot_noise
+            self.update_reference_image                = self.update_reference_image_shot_noise
+            self.add_new_image_to_sum                  = self.add_new_image_to_sum_shot_noise
+            self.update_reference_image_from_image_sum = self.update_reference_image_from_image_sum_shot_noise
 
     def finalize(self) -> None:
         """ Pyretinas destructor (does nothing) """
