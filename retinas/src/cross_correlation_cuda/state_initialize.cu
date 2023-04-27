@@ -18,8 +18,8 @@ state_struct *state_initialize(
    *    N_vertical      : Number of vertical points in the images.
    *    upsample_factor : Upsampling factor.
    *    A0              : See description for B1 below.
-   *    B1              : The new eigenframe is computed according to
-   *                      eigenframe = A0*new_image + B1*eigenframe.
+   *    B1              : The reference image is updated according to
+   *                      ref_image = A0*new_image + B1*ref_imagex.
    *    shift           : In the shot-noise algorithm, this is added to
    *                      each new image before taking its reciprocal.
    *
@@ -67,11 +67,11 @@ state_struct *state_initialize(
   cudaMalloc(&state->new_image_time           , sizeof(COMPLEX)*NhNv);
   cudaMalloc(&state->new_image_freq           , sizeof(COMPLEX)*NhNv);
   cudaMalloc(&state->reciprocal_new_image_time, sizeof(COMPLEX)*NhNv);
-  cudaMalloc(&state->eigenframe_freq          , sizeof(COMPLEX)*NhNv);
+  cudaMalloc(&state->ref_image_freq           , sizeof(COMPLEX)*NhNv);
 
   // Step 4.c: Set additional, auxiliary arrays
   // Step 4.c.1: Pointers that map to aux_array1
-  state->eigenframe_time   = state->aux_array1;
+  state->ref_image_time    = state->aux_array1;
   state->image_product     = state->aux_array1;
   state->upsampled_image   = state->aux_array1;
   state->horizontal_shifts = state->aux_array1;

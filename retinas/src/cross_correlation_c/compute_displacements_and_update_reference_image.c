@@ -1,7 +1,7 @@
 #include "retinas.h"
 
 /*
- *  Function: compute_displacements_and_build_next_eigenframe
+ *  Function: compute_displacements_and_update_reference_image
  *  Author  : Leo Werneck
  *
  *  Obtain the displacement between the new and reference images.
@@ -18,7 +18,7 @@
  *  -------
  *    Nothing.
  */
-void compute_displacements_and_build_next_eigenframe(
+void compute_displacements_and_update_reference_image(
     state_struct *restrict state,
     REAL *restrict displacements ) {
 
@@ -34,6 +34,6 @@ void compute_displacements_and_build_next_eigenframe(
     displacements_sub_pixel_estimate(state, displacements);
   }
 
-  // Step 4: Build next eigenframe
-  build_next_eigenframe(displacements, state);
+  // Step 4: Update the reference image
+  update_reference_image(displacements, state);
 }

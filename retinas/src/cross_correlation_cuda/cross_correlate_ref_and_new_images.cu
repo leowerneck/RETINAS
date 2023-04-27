@@ -30,7 +30,7 @@ void cross_correlate_ref_and_new_images( state_struct *restrict state ) {
   element_wise_multiplication_conj_2d(state->N_horizontal,
                                       state->N_vertical,
                                       state->new_image_freq,
-                                      state->eigenframe_freq,
+                                      state->ref_image_freq,
                                       state->image_product);
 
   // Step 3: Compute the cross correlation

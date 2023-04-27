@@ -117,12 +117,12 @@ typedef struct state_struct {
   COMPLEX *aux_array3;                // GPU (device)
   COMPLEX *new_image_time;            // GPU (device)
   COMPLEX *new_image_freq;            // GPU (device)
-  COMPLEX *eigenframe_freq;           // GPU (device)
+  COMPLEX *ref_image_freq;            // GPU (device)
   COMPLEX *reciprocal_new_image_time; // GPU (device)
 
   // No memory is allocated for these, but they are
   // useful and more descriptive than "aux_array"
-  COMPLEX *eigenframe_time;
+  COMPLEX *ref_image_time;
   COMPLEX *image_product;
   COMPLEX *cross_correlation;
   COMPLEX *upsampled_image;

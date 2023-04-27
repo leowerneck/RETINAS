@@ -23,7 +23,6 @@ upsample_factor = 256
 time_constant   = 10
 offset          = 5.76
 shot_noise      = False
-shift           = 10
 A               = 10700
 w               = 8
 spread_factor   = 0.95
@@ -39,9 +38,9 @@ imdir = generate_synthetic_image_data_set(outdir, N_images,
                                           A=A, w=w, offset=offset,
                                           spread_factor=spread_factor)
 
-rc    = retinas(libpath_c   , N_horizontal, N_vertical, upsample_factor, time_constant, precision="double", shot_noise=shot_noise, shift=shift)
-rcuda = retinas(libpath_cuda, N_horizontal, N_vertical, upsample_factor, time_constant, precision="double", shot_noise=shot_noise, shift=shift)
-rpy   = Pyretinas(            N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, shift=shift)
+rc    = retinas(libpath_c   , N_horizontal, N_vertical, upsample_factor, time_constant, precision="double", shot_noise=shot_noise, offset=offset)
+rcuda = retinas(libpath_cuda, N_horizontal, N_vertical, upsample_factor, time_constant, precision="double", shot_noise=shot_noise, offset=offset)
+rpy   = Pyretinas(            N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset)
 
 print("(RETINAS) Beginning image processing")
 
@@ -62,10 +61,13 @@ finfo.write("%*s | %*s%*s | %*s%*s\n"%(n, "Implementation",
 finfo.write(div+"\n")
 with open(pjoin(outdir, "results.txt"), "w") as f:
     for i in range(N_images+1):
-        im = fromfile(pjoin(imdir, f"image_{i+1:02d}.bin"), dtype=uint16).reshape(N_vertical,N_horizontal)
-        dc    = rc.compute_displacements_wrt_ref_image_and_build_next_eigenframe(im)
-        dcuda = rcuda.compute_displacements_wrt_ref_image_and_build_next_eigenframe(im)
-        dpy   = rpy.compute_displacements_wrt_ref_image_and_build_next_eigenframe(im)
+        im    = fromfile(pjoin(imdir, f"image_{i+1:02d}.bin"), dtype=uint16).reshape(N_vertical,N_horizontal)
+        bc    = rc.preprocess_new_image_and_compute_brightness(im)
+        bcuda = rcuda.preprocess_new_image_and_compute_brightness(im)
+        bpy   = rpy.preprocess_new_image_and_compute_brightness(im)
+        dc    = rc.compute_displacements_and_update_ref_image()
+        dcuda = rcuda.compute_displacements_and_update_ref_image()
+        dpy   = rpy.compute_displacements_and_update_ref_image()
         finfo.write("%*s%*s | %22.15e | %22.15e\n"%(int(n+len("C"))//2, "C", n-(n+len("C"))//2, " ", dc[0], dc[1]))
         finfo.write("%*s%*s | %22.15e | %22.15e\n"%(int(n+len("CUDA"))//2, "CUDA", n-(n+len("CUDA"))//2, " ", dcuda[0], dcuda[1]))
         finfo.write("%*s%*s | %22.15e | %22.15e\n"%(int(n+len("Python"))//2, "Python", n-(n+len("Python"))//2, " ", dpy[0], dpy[1]))

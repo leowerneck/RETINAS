@@ -1,10 +1,10 @@
 #include "retinas.h"
 
 /*
- *  Function: build_next_eigenframe
+ *  Function: update_reference_image
  *  Author  : Leo Werneck
  *
- *  Constructs the next reference image using:
+ *  Updates the reference image using:
  *   ref_image_new = A0*new_image_shifted + B1*ref_image_old.
  *
  *  Arguments
@@ -19,7 +19,7 @@
  *  -------
  *    Nothing.
  */
-void build_next_eigenframe(
+void update_reference_image(
     const REAL *restrict displacements,
     state_struct *restrict state ) {
 
@@ -31,7 +31,7 @@ void build_next_eigenframe(
                                state->aux_array2,
                                state->aux_array3);
 
-  // Step 2: Now shift the new image and add it to the eigenframe
+  // Step 2: Now shift the new image and add it to the reference image
   for(int j=0;j<state->N_vertical;j++) {
     for(int i=0;i<state->N_horizontal;i++) {
       const int idx = i+state->N_horizontal*j;

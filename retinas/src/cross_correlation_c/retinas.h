@@ -143,8 +143,8 @@ REAL typecast_input_image_rebin_4x4_and_compute_brightness(
     const uint16_t *restrict input_array,
     state_struct *restrict state );
 
-// This function is implemented in set_zeroth_eigenframe.c
-void set_zeroth_eigenframe( state_struct *restrict state );
+// This function is implemented in set_first_reference_image.c
+void set_first_reference_image( state_struct *restrict state );
 
 // This function is implemented in cross_correlate_ref_and_new_images.c
 void cross_correlate_ref_and_new_images( state_struct *restrict state );
@@ -173,20 +173,20 @@ void compute_reverse_shift_matrix(
     COMPLEX *restrict aux_array2,
     COMPLEX *restrict reverse_shift_matrix );
 
-// This function is implemented in build_next_eigenframe.c
-void build_next_eigenframe(
+// This function is implemented in update_reference_image.c
+void update_reference_image(
     const REAL *restrict displacements,
     state_struct *restrict state );
 
-// This function is implemented in compute_displacements_and_build_next_eigenframe.c
-void compute_displacements_and_build_next_eigenframe(
+// This function is implemented in compute_displacements_and_update_reference_image.c
+void compute_displacements_and_update_reference_image(
     state_struct *restrict state,
     REAL *restrict displacements );
 
-// This function is implemented in get_eigenframe.c
-void get_eigenframe(
+// This function is implemented in get_reference_image.c
+void get_reference_image(
     state_struct *restrict state,
-    REAL *restrict eigenframe );
+    REAL *restrict reference_image );
 
 static inline
 void info(const char *format, ...) {

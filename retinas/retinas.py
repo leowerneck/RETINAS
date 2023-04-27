@@ -1,11 +1,14 @@
-from numpy import exp, array, single, double
+"""
+Python interface for the C and CUDA implementations of RETINAS
+
+(c) 2023, Leo Werneck
+"""
+
 from ctypes import c_bool, c_uint16, c_int, c_float, c_double
 from ctypes import c_void_p, POINTER, cast, CDLL
-
+from numpy import exp, array, single, double
 from utils import setup_library_function
 from utils import center_array_max_return_displacements
-
-import pyretinas
 
 class retinas:
     """ Main code class """
@@ -15,33 +18,6 @@ class retinas:
         if self.initialized:
             self.lib_state_finalize(self.state)
             self.initialized = False
-
-    def initialize_python_functions(self):
-        """
-        Initialize functions to the ones provided by the Python library.
-        """
-
-        self.lib_state_initialize = pyretinas.state_initialize
-        self.lib_state_finalize   = pyretinas.state_finalize
-        self.lib_cross_correlate_ref_and_new_images = \
-            pyretinas.cross_correlate_ref_and_new_images
-        self.lib_upsample_around_displacements = \
-            pytretinas.upsample_around_displacements
-        self.lib_build_next_eigenframe = pyretinas.build_next_eigenframe
-        if self.shot_noise:
-            self.lib_displacements_full_pixel_estimate = \
-                pyretinas.displacements_full_pixel_estimate_shot_noise
-            self.lib_displacements_sub_pixel_estimate = \
-                lib.displacements_sub_pixel_estimate_shot_noise
-            self.lib_compute_displacements_and_build_next_eigenframe = \
-                pyretinas.compute_displacements_and_build_next_eigenframe_shot_noise
-        else:
-            self.lib_displacements_full_pixel_estimate = \
-                pyretinas.displacements_full_pixel_estimate
-            self.lib_displacements_sub_pixel_estimate = \
-                lib.displacements_sub_pixel_estimate
-            self.lib_compute_displacements_and_build_next_eigenframe = \
-                pyretinas.compute_displacements_and_build_next_eigenframe
 
     def initialize_library_functions(self, libpath):
         """
@@ -74,7 +50,7 @@ class retinas:
         #     const REAL A0,
         #     const REAL B1,
         #     const bool shot_noise_method,
-        #     const REAL shift );
+        #     const REAL offset );
         setup_library_function(lib.state_initialize,
             [c_int, c_int, self.c_real, self.c_real, self.c_real, c_bool, self.c_real], c_void_p)
         self.lib_state_initialize = lib.state_initialize
@@ -99,10 +75,10 @@ class retinas:
             self.lib_typecast_input_image_and_compute_brightness = \
                 lib.typecast_input_image_and_compute_brightness
 
-        # Step 3.b.4: The set_zeroth_eigenframe function
-        # void set_zeroth_eigenframe( state_struct *restrict state );
-        setup_library_function(lib.set_zeroth_eigenframe, [c_void_p], None)
-        self.lib_set_zeroth_eigenframe = lib.set_zeroth_eigenframe
+        # Step 3.b.4: The set_first_reference_image function
+        # void set_first_reference_image( state_struct *restrict state );
+        setup_library_function(lib.set_first_reference_image, [c_void_p], None)
+        self.lib_set_first_reference_image = lib.set_first_reference_image
 
         # Step 3.b.5: The cross_correlate_ref_and_new_images function
         # void cross_correlate_ref_and_new_images(state_struct *restrict state);
@@ -139,7 +115,6 @@ class retinas:
             self.lib_displacements_sub_pixel_estimate = \
                 lib.displacements_sub_pixel_estimate
 
-
         # Step 3.b.8: The upsample_and_compute_subpixel_displacements function
         # void upsample_around_displacements(
         #     state_struct *restrict state,
@@ -148,31 +123,31 @@ class retinas:
             [c_void_p, self.c_real_p], None)
         self.lib_upsample_around_displacements = lib.upsample_around_displacements
 
-        # Step 3.b.9: The build_next_eigenframe function
-        # void build_next_eigenframe(
+        # Step 3.b.9: The update_reference_image function
+        # void update_reference_image(
         #     const REAL *restrict displacements,
         #     state_struct *restrict state );
-        setup_library_function(lib.build_next_eigenframe,
+        setup_library_function(lib.update_reference_image,
             [self.c_real_p, c_void_p], None)
-        self.lib_build_next_eigenframe = lib.build_next_eigenframe
+        self.lib_update_reference_image = lib.update_reference_image
 
-        # Step 3.b.10: The compute_displacements_and_build_next_eigenframe function
-        # void compute_displacements_and_build_next_eigenframe(
+        # Step 3.b.10: The compute_displacements_and_update_reference_image function
+        # void compute_displacements_and_update_reference_image(
         #     state_struct *restrict state,
         #     REAL *restrict displacements );
         if self.shot_noise:
-            setup_library_function(lib.compute_displacements_and_build_next_eigenframe_shot_noise,
+            setup_library_function(lib.compute_displacements_and_update_reference_image_shot_noise,
                        [c_void_p, self.c_real_p], None)
-            self.lib_compute_displacements_and_build_next_eigenframe = \
-                lib.compute_displacements_and_build_next_eigenframe_shot_noise
+            self.lib_compute_displacements_and_update_reference_image = \
+                lib.compute_displacements_and_update_reference_image_shot_noise
         else:
-            setup_library_function(lib.compute_displacements_and_build_next_eigenframe,
+            setup_library_function(lib.compute_displacements_and_update_reference_image,
                        [c_void_p, self.c_real_p], None)
-            self.lib_compute_displacements_and_build_next_eigenframe = \
-                lib.compute_displacements_and_build_next_eigenframe
+            self.lib_compute_displacements_and_update_reference_image = \
+                lib.compute_displacements_and_update_reference_image
 
     def __init__(self, libpath, N_horizontal, N_vertical, upsample_factor,
-                 time_constant, precision="single", shot_noise=False, shift=0):
+                 time_constant, precision="single", shot_noise=True, offset=0):
         """
         Class constructor
 
@@ -204,8 +179,8 @@ class retinas:
           shot_noise : boolean
             Whether or not to use the shot noise method (default=False).
 
-          shift : float
-            Amount to shift new images before taking their reciprocal
+          offset : float
+            Amount to offset new images before taking their reciprocal
             when the shot noise method is enabled (default=0).
         """
 
@@ -221,7 +196,7 @@ class retinas:
             self.c_real   = c_double
             self.c_real_p = POINTER(c_double)
         else:
-            raise ValueError(f'Unsupported precision {precision}. Supported values are "single" and "double"')
+            raise ValueError(f'Unsupported precision {precision}')
         self.c_uint16_p   = POINTER(c_uint16)
 
         # Step 3.b: Initialize additional parameters
@@ -236,13 +211,12 @@ class retinas:
         self.precision       = precision
         self.first_image     = True
         self.shot_noise      = shot_noise
-        self.shift           = shift if shot_noise else -1
+        self.offset          = offset if shot_noise else -1
+        self.h_0             = 0
+        self.v_0             = 0
 
         # Step 3.c: Initialize library functions
-        if libpath.lower() == 'python':
-            self.initialize_python_functions()
-        else:
-            self.initialize_library_functions(libpath)
+        self.initialize_library_functions(libpath)
 
         # Step 3.d: Initialize the state object
         self.state = self.lib_state_initialize(
@@ -252,18 +226,41 @@ class retinas:
                        self.A0,
                        self.B1,
                        self.shot_noise,
-                       self.shift)
+                       self.offset)
 
     def __del__(self):
         """ Class destructor """
         self.finalize()
 
-    def compute_displacements_wrt_ref_image_and_build_next_eigenframe(self, new_image):
+    def preprocess_new_image_and_compute_brightness(self, new_image):
         """
-        Compute the displacements with respect to the reference image and uses
-        that to shift the new image in Fourier space and add it to the reference
-        frame. This last operation is what we refer to as "building the next
-        eigenframe".
+        Typecast the input image from uint16 to complex. This function also
+        computes the brightness (sum of all pixel values in the image).
+
+        Inputs
+        ------
+          new_image : NumPy array
+            NumPy array containing the new image.
+
+        Returns
+        -------
+          brightness : float
+            The brightness of the image.
+        """
+
+        if self.first_image:
+            new_image, self.h_0, self.v_0 = \
+                center_array_max_return_displacements(new_image)
+
+        return self.lib_typecast_input_image_and_compute_brightness(
+            cast(new_image.ctypes.data, self.c_uint16_p), self.state)
+
+    def compute_displacements_and_update_ref_image(self):
+        """
+        Compute the displacements with respect to the reference image. We then
+        use the displacements to shift the new image in Fourier space and add
+        it to the reference frame. When this function is called for the first
+        time, it sets the reference image to the new image.
 
         Inputs
         ------
@@ -277,22 +274,11 @@ class retinas:
         """
 
         if self.first_image:
-            new_image, h_0, v_0 = \
-                center_array_max_return_displacements(new_image)
-
-            brightness = self.lib_typecast_input_image_and_compute_brightness(
-                cast(new_image.ctypes.data, self.c_uint16_p), self.state)
-
-            self.lib_set_zeroth_eigenframe(self.state)
+            self.lib_set_first_reference_image(self.state)
             self.first_image = False
-
-            return array([h_0, v_0])
-
-        brightness = self.lib_typecast_input_image_and_compute_brightness(
-            cast(new_image.ctypes.data, self.c_uint16_p), self.state)
+            return array([self.h_0, self.v_0])
 
         displacements = array([0, 0], dtype=self.real)
-        self.lib_compute_displacements_and_build_next_eigenframe(
+        self.lib_compute_displacements_and_update_reference_image(
             self.state, cast(displacements.ctypes.data, self.c_real_p))
-
         return displacements

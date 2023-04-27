@@ -33,9 +33,9 @@ REAL typecast_input_image_and_compute_brightness_shot_noise(
     const uint16_t *restrict input_array,
     state_struct *restrict state );
 
-// This function is implemented in set_zeroth_eigenframe.cu
+// This function is implemented in set_first_reference_image.cu
 __host__
-void set_zeroth_eigenframe( state_struct *restrict state );
+void set_first_reference_image( state_struct *restrict state );
 
 // This function is implemented in cross_correlate_ref_and_new_images.cu
 __host__
@@ -71,9 +71,9 @@ void displacements_sub_pixel_estimate_shot_noise(
     state_struct *restrict state,
     REAL *restrict displacements );
 
-// This function is implemented in build_next_eigenframe.cu
+// This function is implemented in update_reference_image.cu
 __host__
-void build_next_eigenframe(
+void update_reference_image(
     const REAL *restrict displacements,
     state_struct *restrict state );
 
@@ -87,9 +87,9 @@ void compute_reverse_shift_matrix(
     COMPLEX *restrict vertical_shifts,
     COMPLEX *restrict shift2D );
 
-// This function is implemented in compute_displacements_and_build_next_eigenframe.cu
+// This function is implemented in compute_displacements_and_update_reference_image.cu
 __host__
-void compute_displacements_and_build_next_eigenframe(
+void compute_displacements_and_update_reference_image(
     state_struct *restrict state,
     REAL *restrict displacements );
 
@@ -143,11 +143,11 @@ void element_wise_multiplication_conj_2d(
     const COMPLEX *restrict B,
     COMPLEX *restrict C );
 
-// This function is implemented in get_eigenframe.cu
+// This function is implemented in get_reference_image.cu
 __host__
-void get_eigenframe(
+void get_reference_image(
     state_struct *restrict state,
-    REAL *restrict eigenframe_time );
+    REAL *restrict ref_image_time );
 
 // This function is implemented in print_arrays.cu
 __host__

@@ -21,8 +21,8 @@
  *      See description for B1 below.
 
  *    B1 : in
- *      The new eigenframe is computed according to
- *       eigenframe = A0*new_image + B1*eigenframe.
+ *      The reference image is updated according to
+ *       ref_image = A0*new_image + B1*ref_image.
  *
  *    shot_noise_method : in
  *      Whether or not to use the shot noise method.
