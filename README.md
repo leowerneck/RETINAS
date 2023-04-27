@@ -101,3 +101,38 @@ It should take a few minutes for the test to complete. Some progress information
 1. `diagnostics.txt`: contains a nearly formatted output for all three implementations of the code (`C`, `CUDA`, and `Python`).
 2. `out/displacements_w8_o5.76.txt`: contains the analytic displacements
 3. `out/results.txt`: contains the numerical displacements for all three implementations
+
+## Offline analysis (In progress)
+
+Here we provide an example of how to perform "offline" analysis. This is the case where we keep the reference image fixed and only update it after a certain number of images have been processed. Currently this algorithm is only available in the `Python` implementation of `RETINAS`.
+
+```Python
+from pyretinas import Pyretinas
+
+# Initialize the Pyretinas object
+rpy = Pyretinas(N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset)
+
+# Loop over as many images as we want, computing the displacements
+for i in range(N_images):
+    brightness    = rpy.preprocess_new_image_and_compute_brightness(im)
+    # This should keep the reference frame fixed, but will add the FFT of the
+    # new image to an accumulator (i.e., image_sum_freq += new_image_freq)
+    displacements = rpy.compute_displacements_and_add_new_image_to_sum()
+    #
+    # <do extra stuff>
+    #
+
+# Once N_images are read, for example, we update the reference image. This will
+# do three things:
+#
+# 1. Set ref_frame_freq = image_sum_freq/N_images (note that image_sum_freq
+#                                                  includes ref_frame_freq)
+#
+# 2. Reset the image sum to the current reference frame, i.e.,
+#        image_sum_freq = ref_frame_freq
+#
+# 3. Reset the image counter to one.
+rpy.update_reference_image_from_image_sum()
+
+rpy.finalize()
+```

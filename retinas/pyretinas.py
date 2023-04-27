@@ -365,7 +365,7 @@ class Pyretinas:
         self.image_sum_freq            = self.reciprocal_ref_image_freq
         self.image_counter             = 1
 
-    def compute_displacements_and_add_image_to_sum(self) -> ndarray:
+    def compute_displacements_and_add_new_image_to_sum(self) -> ndarray:
         """
         Compute the displacements and add new image to the sum.
 
