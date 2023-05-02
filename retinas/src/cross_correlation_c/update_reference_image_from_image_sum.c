@@ -25,7 +25,7 @@ void update_reference_image_from_image_sum( state_struct *restrict state ) {
     for(int i=0;i<state->N_horizontal;i++) {
       const int idx = i+state->N_horizontal*j;
       state->ref_image_freq[idx] = state->image_sum_freq[idx]*norm;
-      state->image_sum_freq[idx] state->ref_image_freq[idx];
+      state->image_sum_freq[idx] = state->ref_image_freq[idx];
     }
   }
   state->image_counter = 1;

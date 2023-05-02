@@ -1,7 +1,7 @@
 #include "retinas.h"
 
 /*
- *  Function: get_reference_image
+ *  Function: get_reference_image_time
  *  Author  : Leo Werneck
  *
  *  Returns the current reference image.
@@ -18,9 +18,9 @@
  *  -------
  *    Nothing.
  */
-void get_reference_image(
+void get_reference_image_time(
     state_struct *restrict state,
-    REAL *restrict reference_image ) {
+    REAL *restrict ref_image_time ) {
 
   // Step 1: Compute the inverse FFT of the current reference image.
   FFTW_EXECUTE_DFT(state->ifft2_plan, state->ref_image_freq, state->aux_array1);
@@ -32,7 +32,7 @@ void get_reference_image(
   for(int j=0;j<state->N_vertical;j++) {
     for(int i=0;i<state->N_horizontal;i++) {
       const int idx = i + state->N_horizontal * j;
-      reference_image[idx] = norm*CABS(state->aux_array1[idx]);
+      ref_image_time[idx] = norm*CABS(state->aux_array1[idx]);
     }
   }
 }

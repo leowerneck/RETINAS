@@ -36,5 +36,5 @@ void compute_displacements_and_add_new_image_to_sum(
   }
 
   // Step 4: Add new image to the sum
-  add_new_image_to_sum(state);
+  add_new_image_to_sum(displacements, state);
 }

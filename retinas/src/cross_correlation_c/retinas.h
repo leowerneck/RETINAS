@@ -105,7 +105,7 @@ extern "C" {
 // Image analysis parameter struct
 typedef struct state_struct {
   bool shot_noise_method;
-  int N_horizontal, N_vertical;
+  int N_horizontal, N_vertical, image_counter;
   REAL upsample_factor, A0, B1, shift;
   FFTW_PLAN fft2_plan, ifft2_plan;
   COMPLEX *restrict aux_array1;
@@ -115,6 +115,7 @@ typedef struct state_struct {
   COMPLEX *restrict new_image_time;
   COMPLEX *restrict new_image_freq;
   COMPLEX *restrict ref_image_freq;
+  COMPLEX *restrict image_sum_freq;
 } state_struct;
 
 // .---------------------.
@@ -178,15 +179,33 @@ void update_reference_image(
     const REAL *restrict displacements,
     state_struct *restrict state );
 
+// This function is implemented in add_new_image_to_sum.c
+void add_new_image_to_sum(
+    const REAL *restrict displacements,
+    state_struct *restrict state );
+
+// This function is implemented in update_reference_image_from_image_sum.c
+void update_reference_image_from_image_sum( state_struct *restrict state );
+
 // This function is implemented in compute_displacements_and_update_reference_image.c
 void compute_displacements_and_update_reference_image(
     state_struct *restrict state,
     REAL *restrict displacements );
 
-// This function is implemented in get_reference_image.c
-void get_reference_image(
+// This function is implemented in compute_displacements_and_add_new_image_to_sum.c
+void compute_displacements_and_add_new_image_to_sum(
     state_struct *restrict state,
-    REAL *restrict reference_image );
+    REAL *restrict displacements );
+
+// This function is implemented in get_reference_image_time.c
+void get_reference_image_time(
+    state_struct *restrict state,
+    REAL *restrict ref_image_time );
+
+// This function is implemented in get_reference_image_freq.c
+void get_reference_image_freq(
+    state_struct *restrict state,
+    COMPLEX *restrict ref_image_freq );
 
 static inline
 void info(const char *format, ...) {

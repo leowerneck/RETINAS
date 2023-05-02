@@ -80,6 +80,7 @@ state_struct *state_initialize(
   state->new_image_time = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
   state->new_image_freq = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
   state->ref_image_freq = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
+  state->image_sum_freq = (COMPLEX *restrict)FFTW_ALLOC_COMPLEX(NhNv);
 
   // Step 6: Create the FFT plans
   // Step 6.a: Forward FFT (the pointers here are dummy, they just need enough memory allocated)
