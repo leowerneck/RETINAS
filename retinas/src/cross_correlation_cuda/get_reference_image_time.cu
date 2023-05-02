@@ -1,7 +1,7 @@
 #include "image_analysis.h"
 
 __host__
-void get_reference_image(
+void get_reference_image_time(
     state_struct *restrict state,
     REAL *restrict ref_image_time ) {
   /*
@@ -37,4 +37,8 @@ void get_reference_image(
              state->aux_array_real,
              sizeof(REAL)*NhNv,
              cudaMemcpyDeviceToHost);
+
+  const REAL norm = 1.0/NhNv;
+  for(int i=0;i<NhNv;i++)
+    ref_image_time[i] *= norm;
 }

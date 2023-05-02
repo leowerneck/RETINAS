@@ -6,6 +6,10 @@ extern "C" {
 #endif
 
 // Function prototypes
+// This function is implemented in add_new_image_to_sum.cu
+__host__
+void add_new_image_to_sum( state_struct *restrict state );
+
 // This function is implemented in state_initialize.cu
 __host__
 state_struct *state_initialize(

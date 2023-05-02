@@ -108,7 +108,7 @@
 // Image analysis parameter struct
 typedef struct state_struct {
   bool shot_noise_method;
-  int N_horizontal, N_vertical;
+  int N_horizontal, N_vertical, NhNv, image_counter;
   REAL upsample_factor, A0, B1, shift;
   uint16_t *aux_array_int;            // GPU (device)
   REAL *aux_array_real;               // GPU (device)
@@ -118,6 +118,7 @@ typedef struct state_struct {
   COMPLEX *new_image_time;            // GPU (device)
   COMPLEX *new_image_freq;            // GPU (device)
   COMPLEX *ref_image_freq;            // GPU (device)
+  COMPLEX *image_sum_freq;            // GPU (device)
   COMPLEX *reciprocal_new_image_time; // GPU (device)
 
   // No memory is allocated for these, but they are
