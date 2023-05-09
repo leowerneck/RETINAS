@@ -1,19 +1,16 @@
+"""
+This module can be used to generate synthetic data and test the different
+implementations of RETINAS.
+
+(c) 2023, Leo Werneck
+"""
+
 from os.path import join as pjoin
 from time import time
 from retinas import retinas
 from numpy import uint16, fromfile
 from utils import generate_synthetic_image_data_set
 from pyretinas import Pyretinas
-
-def rel_err(a, b):
-    if a+b == 0.0:
-        return 0.0
-    if a != 0.0:
-        return fabs(1-b/a)
-    return fabs(1-a/b)
-
-def abs_err(a, b):
-    return fabs(a-b)
 
 libpath_c       = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas.so")
 libpath_cuda    = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas_cuda.so")
