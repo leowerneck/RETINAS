@@ -15,7 +15,9 @@
  *  -------
  *    Nothing.
  */
-void add_new_image_to_sum(state_struct *restrict s) {
+void add_new_image_to_sum(
+    const REAL *restrict displacements,
+    state_struct *restrict state ) {
 
   // Step 1: Compute the reverse shift matrix
   compute_reverse_shift_matrix(state->N_horizontal,
