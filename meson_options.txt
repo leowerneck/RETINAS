@@ -12,3 +12,8 @@ option('blas_lib',
        type : 'string',
        value : 'blas',
        description : 'BLAS library name')
+
+option('precision',
+       type : 'string',
+       value : 'single',
+       description : 'Precision of the C and CUDA libraries (single or double)')

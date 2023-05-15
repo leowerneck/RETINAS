@@ -30,15 +30,16 @@ def parse_cmd_args():
         prog="./configure",
         description="Configuration script for the RETINAS library.")
 
-    parser.add_argument("--meson"                     , default="meson"     , help="path to meson executable")
-    parser.add_argument("--ninja"                     , default="ninja"     , help="path to ninja executable")
-    parser.add_argument("--prefix"                    , default=None        , help="installation directory")
-    parser.add_argument("--builddir"                  , default="build"     , help="build directory")
-    parser.add_argument('-s', "--silent-compile"      , action="store_true" , help="less verbose while compiling")
-    parser.add_argument("--default-library"           , default="static"    , help="library type [static, shared, both]")
-    parser.add_argument("--with-c"   , choices=["yes", "no"], default="yes" , help="whether or not to compile the C library [default yes]")
-    parser.add_argument("--with-cuda", choices=["yes", "no"], default="no"  , help="whether or not to compile the CUDA library [default no]")
-    parser.add_argument("--blas"                      , default="blas"      , help="BLAS library")
+    parser.add_argument("--meson"                     , default="meson"             , help="path to meson executable")
+    parser.add_argument("--ninja"                     , default="ninja"             , help="path to ninja executable")
+    parser.add_argument("--prefix"                    , default=None                , help="installation directory")
+    parser.add_argument("--builddir"                  , default="build"             , help="build directory")
+    parser.add_argument('-s', "--silent-compile"      , action="store_true"         , help="less verbose while compiling")
+    parser.add_argument("--default-library"           , default="static"            , help="library type [static, shared, both]")
+    parser.add_argument("--with-c"   , choices=["yes", "no"], default="yes"         , help="whether or not to compile the C library [default yes]")
+    parser.add_argument("--with-cuda", choices=["yes", "no"], default="no"          , help="whether or not to compile the CUDA library [default no]")
+    parser.add_argument("--blas"                      , default="blas"              , help="BLAS library")
+    parser.add_argument("--precision", choices=["single", "double"], default="single", help="Floating point precision of the C and CUDA library")
 
     return parser.parse_args()
 
@@ -109,8 +110,9 @@ def meson_build(args):
     # Check whether or not to build the C library
     cuda_lib = "-Dwith-cuda=true" if args.with_cuda=="yes" else "-Dwith-cuda=false"
     blas_lib = "-Dblas_lib="+args.blas
+    code_prec = "-Dprecision="+args.precision
 
-    cmdargs = [args.meson, "setup", args.builddir, c_lib, cuda_lib, blas_lib]
+    cmdargs = [args.meson, "setup", args.builddir, c_lib, cuda_lib, blas_lib, code_prec]
     if exists(args.builddir):
         cmdargs += ["--reconfigure"]
     if args.prefix is not None:

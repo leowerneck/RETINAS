@@ -7,6 +7,19 @@ project('RETINAS',
 with_c = get_option('with-c')
 with_cuda = get_option('with-cuda')
 blas_lib = get_option('blas_lib')
+precision = get_option('precision')
+
+if precision == 'single'
+  message('Single precision enabled')
+  precision_flag = '-DPRECISION=0'
+  fftw_dep_name = 'fftw3f'
+  fftw_flavor = 'fftwf'
+else
+  message('Double precision enabled')
+  precision_flag = '-DPRECISION=1'
+  fftw_dep_name = 'fftw3'
+  fftw_flavor = 'fftw'
+endif
 
 subdir('retinas')
 
@@ -31,16 +44,12 @@ if get_option('with-c')
   ###################
   # FFTW dependency #
   ###################
-  dep_fftw  = dependency('fftw3', required : true)
-  dep_fftwf = dependency('fftw3f', required : true)
+  dep_fftw  = dependency(fftw_dep_name, required : true)
 
   fftw_types = ['@0@_complex', '@0@_plan']
   foreach type : fftw_types
-    if not cc.has_type(type.format('fftw'), prefix : '#include <fftw3.h>', dependencies : dep_fftw)
-      error('FFTW3 library does not have type @0@'.format(func.format('fftw')))
-    endif
-    if not cc.has_type(type.format('fftwf'), prefix : '#include <fftw3.h>', dependencies : dep_fftwf)
-      error('FFTW3 library does not have type @0@'.format(func.format('fftwf')))
+    if not cc.has_type(type.format(fftw_flavor), prefix : '#include <fftw3.h>', dependencies : dep_fftw)
+      error('FFTW3 library does not have type @0@'.format(func.format(fftw_flavor)))
     endif
   endforeach
 
@@ -48,11 +57,8 @@ if get_option('with-c')
                 '@0@_plan_dft_2d', '@0@_destroy_plan' , '@0@_execute',
                 '@0@_execute_dft', '@0@_cleanup']
   foreach func : fftw_funcs
-    if not cc.has_function(func.format('fftw'), prefix : '#include <fftw3.h>', dependencies : dep_fftw)
-      error('FFTW3 library does not have function @0@'.format(func.format('fftw')))
-    endif
-    if not cc.has_function(func.format('fftwf'), prefix : '#include <fftw3.h>', dependencies : dep_fftwf)
-      error('FFTW3 library does not have function @0@'.format(func.format('fftwf')))
+    if not cc.has_function(func.format(fftw_flavor), prefix : '#include <fftw3.h>', dependencies : dep_fftw)
+      error('FFTW3 library does not have function @0@'.format(func.format(fftw_flavor)))
     endif
   endforeach
 
@@ -83,7 +89,7 @@ if get_option('with-c')
 
   # The C library
   lib_c_srcs = [c_srcs]
-  c_args = ['-O3', '-march=native', '-std=gnu99']
+  c_args = ['-O3', '-march=native', '-std=gnu99', precision_flag]
   lib_c = library('retinas', lib_c_srcs,
                   include_directories : [c_inc_dir],
                   implicit_include_directories : true,
@@ -107,7 +113,7 @@ if get_option('with-cuda')
 
   # The CUDA library
   lib_cuda_srcs = [cuda_srcs]
-  cuda_args = ['-Xptxas=-O3', '-arch=native', '-O3', '-Xcompiler=-march=native']
+  cuda_args = ['-Xptxas=-O3', '-arch=native', '-O3', '-Xcompiler=-march=native', precision_flag]
   lib_cuda = library('retinas_cuda', lib_cuda_srcs,
                      include_directories : [cuda_inc_dir],
                      implicit_include_directories : true,
