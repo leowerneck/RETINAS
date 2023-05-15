@@ -39,7 +39,7 @@ class Pyretinas:
 
     def preprocess_new_image_and_compute_brightness_shot_noise(self, new_image) -> None:
         """
-        Pre-process the new image for the cross-correlation algorithm.
+        Pre-process the new image for the shot noise algorithm.
 
         Inputs
         ------
@@ -51,6 +51,11 @@ class Pyretinas:
           brightness : float64
             Sum of all pixels in the new image.
         """
+
+        if self.first_image:
+            new_image, self.h_0, self.v_0 = \
+                center_array_max_return_displacements(new_image)
+
         self.squared_new_image_freq    = fft2(square(new_image+self.offset, dtype=float64))
         self.reciprocal_new_image_freq = fft2(reciprocal(new_image+self.offset, dtype=float64))
         return new_image.sum(dtype=float64)
@@ -344,8 +349,8 @@ class Pyretinas:
         """
 
         self.ref_image_freq = self.image_sum_freq/self.image_counter
-        self.image_sum_freq = self.ref_image_freq
-        self.image_counter  = 1
+        self.image_sum_freq = None
+        self.image_counter  = 0
 
     def update_reference_image_from_image_sum_shot_noise(self) -> None:
         """
@@ -362,8 +367,8 @@ class Pyretinas:
         """
 
         self.reciprocal_ref_image_freq = self.image_sum_freq/self.image_counter
-        self.image_sum_freq            = self.reciprocal_ref_image_freq
-        self.image_counter             = 1
+        self.image_sum_freq            = None
+        self.image_counter             = 0
 
     def compute_displacements_and_add_new_image_to_sum(self) -> ndarray:
         """
@@ -430,7 +435,7 @@ class Pyretinas:
                  N_horizontal : int,
                  N_vertical : int,
                  upsample_factor : float64,
-                 time_constant : float64,
+                 time_constant : float64 = None,
                  shot_noise : bool = False,
                  offset : float64 = -1) -> None:
         """
@@ -466,9 +471,10 @@ class Pyretinas:
         self.upsampled_region  = int(ceil(1.5*upsample_factor))
         self.dftshift          = fix(self.upsampled_region / 2.0)
         self.time_constant     = time_constant
-        self.x                 = exp(-1/time_constant)
-        self.A0                = 1-self.x
-        self.B1                = self.x
+        if time_constant is not None:
+            self.x             = exp(-1/time_constant)
+            self.A0            = 1-self.x
+            self.B1            = self.x
         self.shot_noise        = shot_noise
         self.offset            = offset
         self.image_product     = zeros((N_vertical, N_horizontal), dtype=complex)
