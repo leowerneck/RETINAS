@@ -9,6 +9,7 @@ from ctypes import c_void_p, POINTER, cast, CDLL
 from numpy import exp, array, single, double
 from utils import setup_library_function
 from utils import center_array_max_return_displacements
+from utils import center_array_min_return_displacements
 
 class retinas:
     """ Main code class """
@@ -147,7 +148,8 @@ class retinas:
                 lib.compute_displacements_and_update_reference_image
 
     def __init__(self, libpath, N_horizontal, N_vertical, upsample_factor,
-                 time_constant, precision="single", shot_noise=True, offset=0):
+                 time_constant, precision="single", shot_noise=True, offset=0,
+                 center_first_image='max'):
         """
         Class constructor
 
@@ -200,20 +202,25 @@ class retinas:
         self.c_uint16_p   = POINTER(c_uint16)
 
         # Step 3.b: Initialize additional parameters
-        self.N_horizontal    = N_horizontal
-        self.N_vertical      = N_vertical
-        self.upsample_factor = upsample_factor
-        self.time_constant   = time_constant
-        self.x               = exp(-1/time_constant)
-        self.A0              = 1-self.x
-        self.B1              = self.x
-        self.libpath         = libpath
-        self.precision       = precision
-        self.first_image     = True
-        self.shot_noise      = shot_noise
-        self.offset          = offset if shot_noise else -1
-        self.h_0             = 0
-        self.v_0             = 0
+        self.N_horizontal       = N_horizontal
+        self.N_vertical         = N_vertical
+        self.upsample_factor    = upsample_factor
+        if time_constant is not None:
+            self.time_constant  = time_constant
+            self.x              = exp(-1/time_constant)
+            self.A0             = 1-self.x
+            self.B1             = self.x
+        else:
+            self.A0             = -1
+            self.B1             = -1
+        self.libpath            = libpath
+        self.precision          = precision
+        self.first_image        = True
+        self.shot_noise         = shot_noise
+        self.offset             = offset if shot_noise else -1
+        self.h_0                = 0
+        self.v_0                = 0
+        self.center_first_image = center_first_image
 
         # Step 3.c: Initialize library functions
         self.initialize_library_functions(libpath)
@@ -249,8 +256,18 @@ class retinas:
         """
 
         if self.first_image:
-            new_image, self.h_0, self.v_0 = \
-                center_array_max_return_displacements(new_image)
+            if self.center_first_image is not None:
+                if not isinstance(self.center_first_image, str):
+                    raise TypeError("center_first_image can only be None or of type str")
+
+                if self.center_first_image.lower() == 'max':
+                    new_image, self.h_0, self.v_0 = \
+                        center_array_max_return_displacements(new_image)
+                elif self.center_first_image.lower() == 'min':
+                    new_image, self.h_0, self.v_0 = \
+                        center_array_min_return_displacements(new_image)
+                else:
+                    raise ValueError("center_first_image can only be 'max', 'min', or None")
 
         return self.lib_typecast_input_image_and_compute_brightness(
             cast(new_image.ctypes.data, self.c_uint16_p), self.state)

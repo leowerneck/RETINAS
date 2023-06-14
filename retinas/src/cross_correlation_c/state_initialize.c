@@ -44,13 +44,15 @@ state_struct *state_initialize(
       const bool shot_noise_method,
       const REAL shift ) {
 
-  info("Initializing state object.\n");
-  info("  Parameters:\n");
+  info("Initializing the C state object\n");
+  info("  Input parameters:\n");
   info("    N_horizontal    = %d\n", N_horizontal);
   info("    N_vertical      = %d\n", N_vertical);
   info("    upsample_factor = %g\n", upsample_factor);
-  info("    A0              = %g\n", A0);
-  info("    B1              = %g\n", B1);
+  if( A0 > 0 && B1 > 0 ) {
+    info("    A0              = %g\n", A0);
+    info("    B1              = %g\n", B1);
+  }
   if( shot_noise_method )
     info("    shift           = %g\n", shift);
 
@@ -94,7 +96,7 @@ state_struct *state_initialize(
                                        FFTW_BACKWARD, FFTW_ESTIMATE);
 
   // Step 7: Print basic information to the user
-  info("Successfully initialized state object\n");
+  info("Successfully initialized the C state object\n");
 
   // Step 8: Return C state
   return state;

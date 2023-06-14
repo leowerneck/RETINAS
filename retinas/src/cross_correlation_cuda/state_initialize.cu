@@ -28,15 +28,17 @@ state_struct *state_initialize(
    *    state           : The state object, fully initialized.
    */
 
-  info("Initializing state object\n");
-  info("    Input parameters:\n");
-  info("        N_horizontal    = %d\n", N_horizontal);
-  info("        N_vertical      = %d\n", N_vertical);
-  info("        upsample_factor = %g\n", upsample_factor);
-  info("        A0              = %g\n", A0);
-  info("        B1              = %g\n", B1);
+  info("Initializing the CUDA state object\n");
+  info("  Input parameters:\n");
+  info("    N_horizontal    = %d\n", N_horizontal);
+  info("    N_vertical      = %d\n", N_vertical);
+  info("    upsample_factor = %g\n", upsample_factor);
+  if( A0 > 0 && B1 > 0 ) {
+    info("    A0              = %g\n", A0);
+    info("    B1              = %g\n", B1);
+  }
   if(shot_noise_method)
-    info("        shift           = %g\n", shift);
+    info("    shift           = %g\n", shift);
 
   // Step 1: Allocate memory for the parameter struct
   state_struct *state = (state_struct *)malloc(sizeof(state_struct));
@@ -91,7 +93,7 @@ state_struct *state_initialize(
   cublasCreate(&state->cublasHandle);
 
   // Step 5: Print basic information to the user
-  info("Successfully initialized state object\n");
+  info("Successfully initialized the CUDA state object\n");
 
   // Step 6: All done! Return the state object
   return state;

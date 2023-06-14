@@ -33,5 +33,5 @@ void state_finalize( state_struct *restrict state ) {
   // Step 3: Free memory allocated for the C state struct
   free(state);
 
-  info("Successfully finalized state object\n");
+  info("Successfully finalized the C state object\n");
 }

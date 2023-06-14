@@ -5,7 +5,7 @@ from os.path import join as pjoin
 from shutil import rmtree
 from time import time
 from ctypes import c_int, POINTER
-from numpy import unravel_index, argmax, rint, roll
+from numpy import unravel_index, argmax, argmin, rint, roll
 from numpy import mgrid, sqrt, uint16, pi, multiply, array, exp, outer
 from numpy.random import random, poisson
 from scipy.special import erf
@@ -58,6 +58,17 @@ def center_array_max_return_displacements(image_array):
     ind_max = unravel_index(argmax(image_array, axis=None), shape)
     move_0  = int(rint(shape[0]/2 - (ind_max[0]+0.5)+0.1))
     move_1  = int(rint(shape[1]/2 - (ind_max[1]+0.5)+0.1))
+    h_0     = -move_1
+    v_0     = -move_0
+    return roll(image_array, (move_0,move_1), axis=(0,1)), h_0, v_0
+
+def center_array_min_return_displacements(image_array):
+    """ Fast recentering of an image array around the minimum pixel """
+
+    shape   = image_array.shape
+    ind_min = unravel_index(argmin(image_array, axis=None), shape)
+    move_0  = int(rint(shape[0]/2 - (ind_min[0]+0.5)+0.1))
+    move_1  = int(rint(shape[1]/2 - (ind_min[1]+0.5)+0.1))
     h_0     = -move_1
     v_0     = -move_0
     return roll(image_array, (move_0,move_1), axis=(0,1)), h_0, v_0

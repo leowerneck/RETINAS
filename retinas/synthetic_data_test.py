@@ -12,19 +12,20 @@ from numpy import uint16, fromfile
 from utils import generate_synthetic_image_data_set
 from pyretinas import Pyretinas
 
-libpath_c       = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas.so")
-libpath_cuda    = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas_cuda.so")
-N_horizontal    = 256
-N_vertical      = 128
-upsample_factor = 256
-time_constant   = 10
-offset          = 5.76
-shot_noise      = False
-A               = 10700
-w               = 8
-spread_factor   = 0.95
-outdir          = "out"
-N_images        = 1000
+libpath_c          = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas.so")
+libpath_cuda       = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas_cuda.so")
+N_horizontal       = 256
+N_vertical         = 128
+upsample_factor    = 256
+time_constant      = 10
+offset             = 5.76
+shot_noise         = False
+A                  = 10700
+w                  = 8
+spread_factor      = 0.95
+outdir             = "out"
+N_images           = 1000
+center_first_image = 'max' # min or None also possible
 
 print("(RETINAS) This routine will test all three implementations (C, CUDA, Python).")
 print("(RETINAS) Neatly formatted diagnostics can be found in the file diagnostics.txt.")
@@ -35,9 +36,9 @@ imdir = generate_synthetic_image_data_set(outdir, N_images,
                                           A=A, w=w, offset=offset,
                                           spread_factor=spread_factor)
 
-rc    = retinas(libpath_c   , N_horizontal, N_vertical, upsample_factor, time_constant, precision="double", shot_noise=shot_noise, offset=offset)
-rcuda = retinas(libpath_cuda, N_horizontal, N_vertical, upsample_factor, time_constant, precision="double", shot_noise=shot_noise, offset=offset)
-rpy   = Pyretinas(            N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset)
+rc    = retinas(libpath_c   , N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset, center_first_image=center_first_image, precision="single")
+rcuda = retinas(libpath_cuda, N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset, center_first_image=center_first_image, precision="single")
+rpy   = Pyretinas(            N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset, center_first_image=center_first_image)
 
 print("(RETINAS) Beginning image processing")
 

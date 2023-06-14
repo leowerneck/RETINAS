@@ -10,7 +10,9 @@ from numpy import abs as npabs
 from numpy import arange, unravel_index, argmax, argmin, exp, zeros, pi
 from numpy import fix, ceil, around, tensordot, stack, square, reciprocal, array
 from numpy.fft import fftfreq, fft2, ifft2
-from utils import freq_shift, center_array_max_return_displacements
+from utils import freq_shift
+from utils import center_array_max_return_displacements
+from utils import center_array_min_return_displacements
 
 class Pyretinas:
     """ Pyretinas class """
@@ -31,8 +33,18 @@ class Pyretinas:
         """
 
         if self.first_image:
-            new_image, self.h_0, self.v_0 = \
-                center_array_max_return_displacements(new_image)
+            if self.center_first_image is not None:
+                if not isinstance(self.center_first_image, str):
+                    raise TypeError("center_first_image can only be None or of type str")
+
+                if self.center_first_image.lower() == 'max':
+                    new_image, self.h_0, self.v_0 = \
+                        center_array_max_return_displacements(new_image)
+                elif self.center_first_image.lower() == 'min':
+                    new_image, self.h_0, self.v_0 = \
+                        center_array_min_return_displacements(new_image)
+                else:
+                    raise ValueError("center_first_image can only be 'max', 'min', or None")
 
         self.new_image_freq = fft2(new_image)
         return new_image.sum(dtype=float64)
@@ -53,8 +65,18 @@ class Pyretinas:
         """
 
         if self.first_image:
-            new_image, self.h_0, self.v_0 = \
-                center_array_max_return_displacements(new_image)
+            if self.center_first_image is not None:
+                if not isinstance(self.center_first_image, str):
+                    raise TypeError("center_first_image can only be None or of type str")
+
+                if self.center_first_image.lower() == 'max':
+                    new_image, self.h_0, self.v_0 = \
+                        center_array_max_return_displacements(new_image)
+                elif self.center_first_image.lower() == 'min':
+                    new_image, self.h_0, self.v_0 = \
+                        center_array_min_return_displacements(new_image)
+                else:
+                    raise ValueError("center_first_image can only be 'max', 'min', or None")
 
         self.squared_new_image_freq    = fft2(square(new_image+self.offset, dtype=float64))
         self.reciprocal_new_image_freq = fft2(reciprocal(new_image+self.offset, dtype=float64))
@@ -437,7 +459,9 @@ class Pyretinas:
                  upsample_factor : float64,
                  time_constant : float64 = None,
                  shot_noise : bool = False,
-                 offset : float64 = -1) -> None:
+                 offset : float64 = -1,
+                 center_first_image : Union[str, None] = 'max',
+                 ) -> None:
         """
         Initialize the Pyretinas object and return it.
 
@@ -465,26 +489,27 @@ class Pyretinas:
             when the shot noise method is enabled (default=0).
         """
 
-        self.N_horizontal      = N_horizontal
-        self.N_vertical        = N_vertical
-        self.upsample_factor   = upsample_factor
-        self.upsampled_region  = int(ceil(1.5*upsample_factor))
-        self.dftshift          = fix(self.upsampled_region / 2.0)
-        self.time_constant     = time_constant
+        self.N_horizontal       = N_horizontal
+        self.N_vertical         = N_vertical
+        self.upsample_factor    = upsample_factor
+        self.upsampled_region   = int(ceil(1.5*upsample_factor))
+        self.dftshift           = fix(self.upsampled_region / 2.0)
+        self.time_constant      = time_constant
         if time_constant is not None:
-            self.x             = exp(-1/time_constant)
-            self.A0            = 1-self.x
-            self.B1            = self.x
-        self.shot_noise        = shot_noise
-        self.offset            = offset
-        self.image_product     = zeros((N_vertical, N_horizontal), dtype=complex)
-        self.cross_correlation = zeros((N_vertical, N_horizontal), dtype=complex)
-        self.upsampled_image   = zeros((N_vertical, N_horizontal), dtype=complex)
-        self.image_sum_freq    = zeros((N_vertical, N_horizontal), dtype=complex)
-        self.first_image       = True
-        self.h_0               = 0
-        self.v_0               = 0
-        self.image_counter     = 1
+            self.x              = exp(-1/time_constant)
+            self.A0             = 1-self.x
+            self.B1             = self.x
+        self.shot_noise         = shot_noise
+        self.offset             = offset
+        self.image_product      = zeros((N_vertical, N_horizontal), dtype=complex)
+        self.cross_correlation  = zeros((N_vertical, N_horizontal), dtype=complex)
+        self.upsampled_image    = zeros((N_vertical, N_horizontal), dtype=complex)
+        self.image_sum_freq     = zeros((N_vertical, N_horizontal), dtype=complex)
+        self.first_image        = True
+        self.h_0                = 0
+        self.v_0                = 0
+        self.image_counter      = 1
+        self.center_first_image = center_first_image
 
         if not shot_noise:
             self.new_image_freq = zeros((N_vertical, N_horizontal), dtype=complex)
