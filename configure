@@ -420,7 +420,7 @@ check_lib()
         if [ ! -d $1 ]; then
             error "$4 directory $1 does not exist"
         fi
-        green "User provided"
+        green "USER PROVIDED"
         printf " (incdir: $1/include; libdir: $1/lib)\n"
         incflags="-I${1}/include"
         libflags="-L${1}/lib -l$4"
@@ -463,19 +463,16 @@ int main() {
     blas_incflags=$incflags
     blas_libflags=$libflags
 
+    if [ "$precision" = "both" ]; then
+        blas_test_funcs="cblas_isamax cblas_icamax cblas_idamax cblas_izamax cblas_cgemm cblas_zgemm"
+    elif [ "$precision" = "double" ]; then
+        blas_test_funcs="cblas_idamax cblas_izamax cblas_zgemm"
+    else
+        blas_test_funcs="cblas_isamax cblas_icamax cblas_cgemm"
+    fi
     # Test blas
-    count=0
-    for f in cblas_isamax cblas_icamax cblas_idamax cblas_izamax cblas_cgemm cblas_zgemm; do
-        count=$((count+1))
-        if [ $count -le 4 ]; then
-            code="
-#include <stdio.h>
-#include <cblas.h>
-int main() {
-  return $f(1, NULL, 1);
-}
-"
-        else
+    for f in $blas_test_funcs; do
+        if [[ "$f" == *"gemm" ]]; then
             code="
 #include <stdio.h>
 #include <cblas.h>
@@ -487,6 +484,14 @@ int main() {
   return 0;
 }
 "
+        else
+            code="
+#include <stdio.h>
+#include <cblas.h>
+int main() {
+  return $f(1, NULL, 1);
+}
+"
         fi
         compiles "$code" $compiler " -O0 $blas_incflags " " $blas_libflags" "Checking if blas library supports function $f... "
         if [ $? -ne 0 ]; then
@@ -494,15 +499,67 @@ int main() {
         fi
     done
 
-    check_lib "$fftwdir" "$fftwinc" "$fftwlib" "fftw3"
-    fftw_incflags=$incflags
-    fftw_libflags=$libflags
-    check_lib "$fftwdir" "$fftwinc" "$fftwlib" "fftw3f"
-    fftwf_incflags=$incflags
-    fftwf_libflags=$libflags
+    if [ "$precision" = "double" ] || [ "$precision" = "both" ]; then
+        check_lib "$fftwdir" "$fftwinc" "$fftwlib" "fftw3"
+        fftw_incflags=$incflags
+        fftw_libflags=$libflags
+        code="
+#include <stdio.h>
+#include <fftw3.h>
+int main() {
+  int N = 16;
+  fftw_complex *in, *out;
+  fftw_plan plan;
+  in = fftw_alloc_complex(N);
+  out = fftw_alloc_complex(N);
+  plan = fftw_plan_dft_2d(N, N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+  for (int i = 0; i < N; i++) {
+    in[i][0] = 0.0;
+    in[i][1] = 0.0;
+  }
+  fftw_execute(plan);
+  for (int i = 0; i < N; i++)
+    printf(\"Output[%d]: %f + %fi\", i, out[i][0], out[i][1]);
+  fftw_destroy_plan(plan);
+  fftw_free(in);
+  fftw_free(out);
+  return 0;
+}
+"
+        compiles "$code" $compiler " -O0 $fftw_incflags " " $fftw_libflags" "Checking if fftw3 library supports all needed functions... "
+    fi
+    if [ "$precision" = "single" ] || [ "$precision" = "both" ]; then
+        check_lib "$fftwdir" "$fftwinc" "$fftwlib" "fftw3f"
+        fftwf_incflags=$incflags
+        fftwf_libflags=$libflags
+        code="
+#include <stdio.h>
+#include <fftw3.h>
+int main() {
+  int N = 16;
+  fftwf_complex *in, *out;
+  fftwf_plan plan;
+  in = fftwf_alloc_complex(N);
+  out = fftwf_alloc_complex(N);
+  plan = fftwf_plan_dft_2d(N, N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+  for (int i = 0; i < N; i++) {
+    in[i][0] = 0.0;
+    in[i][1] = 0.0;
+  }
+  fftwf_execute(plan);
+  for (int i = 0; i < N; i++)
+    printf(\"Output[%d]: %f + %fi\", i, out[i][0], out[i][1]);
+  fftwf_destroy_plan(plan);
+  fftwf_free(in);
+  fftwf_free(out);
+  return 0;
+}
+"
+        compiles "$code" $compiler " -O0 $fftwf_incflags " " $fftwf_libflags" "Checking if fftw3f library supports all needed functions... "
+    fi
     strip "$cbuildflags $blas_incflags $fftw_incflags"
     cbuildflags=$ret
-    strip "$cbuildlibs $blas_libflags $fftw_libflags"
+    strip "$cbuildlibs $blas_libflags"
     cbuildlibs=$ret
 }
 
@@ -526,227 +583,92 @@ else
     cc=$compiler
     ccflags=$cbuildflags
     cclibs=$cbuildlibs
+    csrcs=$(find ./retinas/src/cross_correlation_c -name '*.c')
+    cincs=$(find ./retinas/src/cross_correlation_c -name '*.h')
+    csrcs=$(printf "$csrcs" | sed 's/  */ /; s/^ *//; s/ *$//')
+    cincs=$(printf "$cincs" | sed 's/  */ /; s/^ *//; s/ *$//')
+    if [ "$precision" = "both" ]; then
+        for d in single double; do
+            printf "Creating build directory $builddir/$d/cross_correlation_c... "
+            mkdir -p $builddir/$d/cross_correlation_c
+            green "DONE\n"
+        done
+        cobjsf=$(printf "$csrcs" | sed "s/\.c/\.o/g; s|retinas/src|$builddir/single|g")
+        cobjsd=$(printf "$csrcs" | sed "s/\.c/\.o/g; s|retinas/src|$builddir/double|g")
+    elif [ "$precision" = "single" ]; then
+        d="single"
+        printf "Creating build directory $builddir/$d/cross_correlation_c... "
+        mkdir -p $builddir/$d/cross_correlation_c
+        green "DONE\n"
+        cobjsf=$(printf "$csrcs" | sed "s/\.c/\.o/g; s|retinas/src|$builddir/single|g")
+    else
+        d="double"
+        printf "Creating build directory $builddir/$d/cross_correlation_... "
+        mkdir -p $builddir/$d/cross_correlation_c
+        green "DONE\n"
+        cobjsd=$(printf "$csrcs" | sed "s/\.c/\.o/g; s|retinas/src/|$builddir/double|g")
+    fi
 fi
 
 printf "Checking if CUDA library requested... "
 if [ $with_cuda -eq 1 ]; then YES; check_cuda; else green "NO\n"; fi
 
+printf "Creating directory $builddir/include... "
+mkdir -p $builddir/include
+green "DONE\n"
 
+printf "Creating directory $builddir/lib... "
+mkdir -p $builddir/lib
+green "DONE\n"
 
-# clibs=$(printf "%s" "-lm $clibs" | awk '{sub(/ *$/, "", $0); print}')
-# c_compiles "$code" $CC " $cflags " " $clibs" "Checking if compiler works with build flags... "
-# if [ $? -ne 0 ]; then
-#     error "The C compiler does not work with the build flags\n"
-# fi
-# if [ "$ompcflag" != "" ]; then
-#     code='
-# #include <stdio.h>
-# #include <omp.h>
-# int main() {
-#   #pragma omp parallel
-#   {
-#     printf("Hello, world!\\n");
-#   }
-#   return 0;
-# }
-# '
-#     c_compiles "$code" $CC " -O0$ompcflag " " $clibs" "Checking if compiler works with$ompcflag flag... "
-#     if [ $? -ne 0 ]; then
-#         printf "Disabling OpenMP\n"
-#         ompcflag=""
-#     fi
-# fi
+printf "Generating Makefile... "
+rm -f Makefile
+printf "# Makefile automatically generated by $pkg's configure script\n" > Makefile
+printf "CC            = $cc\n"                                          >> Makefile
+printf "CFLAGS        = $cbuildflags\n"                                 >> Makefile
+printf "CCOMPILE      = \$(CC) \$(CFLAGS)\n"                            >> Makefile
+printf "PREFIX        = $prefix\n"                                       >> Makefile
+printf "BUILDDIR      = $builddir\n"                                     >> Makefile
+if [ "$precision" = "both" ]; then
+    printf "LIBCSOD       = lib${libname}c.so\n"                        >> Makefile
+    printf "LIBCSOS       = lib${libname}cf.so\n"                       >> Makefile
+    printf 'BUILDCLIBSOD  = $(BUILDDIR)/lib/$(LIBCSOD)\n'               >> Makefile
+    printf 'BUILDCLIBSOS  = $(BUILDDIR)/lib/$(LIBCSOS)\n'               >> Makefile
+    printf 'PREFIXCLIBSOD = $(PREFIX)/lib/$(LIBCSOD)\n'                 >> Makefile
+    printf 'PREFIXCLIBSOS = $(PREFIX)/lib/$(LIBCSOS)\n'                 >> Makefile
+    printf "LD_FLAGSD     = $cbuildlibs $fftw_libflags\n"               >> Makefile
+    printf "LD_FLAGSS     = $cbuildlibs $fftwf_libflags\n"              >> Makefile
+    printf "COBJD         = " >> Makefile; echo $cobjsd                 >> Makefile
+    printf "COBJS         = " >> Makefile; echo $cobjsf                 >> Makefile
+elif [ "$precision" = "single" ]; then
+    printf "LIBCSOS       = lib${libname}cf.so\n"                       >> Makefile
+    printf 'BUILDLIBCSOS  = $(BUILDDIR)/lib/$(LIBCSOS)\n'               >> Makefile
+    printf 'PREFIXCLIBSOS = $(PREFIX)/lib/$(LIBCSOS)\n'                 >> Makefile
+    printf "LD_FLAGSS     = $cbuildlibs $fftwf_libflags\n"              >> Makefile
+    printf "COBJS         = " >> Makefile; echo $cobjsf                 >> Makefile
+else
+    printf "LIBCSOD       = lib${libname}c.so\n"                        >> Makefile
+    printf 'BUILDLIBCSOD  = $(BUILDDIR)/lib/$(LIBCSOD)\n'               >> Makefile
+    printf 'PREFIXCLIBSOD = $(PREFIX)/lib/$(LIBCSOD)\n'                 >> Makefile
+    printf "LD_FLAGSD     = $cbuildlibs $fftw_libflags\n"               >> Makefile
+    printf "COBJD         = " >> Makefile; echo $cobjsd                 >> Makefile
+fi
+printf "CSRC          = " >> Makefile; echo $csrcs                      >> Makefile
+printf "CINC          = " >> Makefile; echo $cincs                      >> Makefile
+printf '\nall: $(BUILDCLIBSOD) $(BUILDCLIBSOS)\n\n'                     >> Makefile
+printf '$(BUILDCLIBSOD): $(COBJD)\n'                                    >> Makefile
+printf '\t$(CCOMPILE) -fPIC -shared $(COBJD) -o $@ $(LD_FLAGSD)\n\n'    >> Makefile
+printf '$(BUILDCLIBSOS): $(COBJS)\n'                                    >> Makefile
+printf '\t$(CCOMPILE) -fPIC -shared $(COBJS) -o $@ $(LD_FLAGSS)\n\n'    >> Makefile
+printf '$(COBJD): $(BUILDDIR)/double/%%.o : retinas/src/%%.c $(CINC)\n' >> Makefile
+printf '\t$(CCOMPILE) -fPIC -c -DPRECISION=1 $< -o $@\n\n'              >> Makefile
+printf '$(COBJS): $(BUILDDIR)/single/%%.o : retinas/src/%%.c $(CINC)\n' >> Makefile
+printf '\t$(CCOMPILE) -fPIC -c -DPRECISION=0 $< -o $@\n\n'              >> Makefile
+printf 'clean:\n'                                                       >> Makefile
+printf '\trm -f $(COBJD) $(COBJS) $(BUILDCLIBSOD) $(BUILDCLIBSOS)\n\n'  >> Makefile
+printf 'realclean: clean\n'                                             >> Makefile
+printf '\trm -rf build Makefile\n\n'                                    >> Makefile
 
-# if [ $usehdf5 -eq 0 ]; then
-#     cflags="$cflags -DGRHAYL_DISABLE_HDF5"
-# else
-#     if [ "$hdf5dir" = "" ]; then
-#         if [ "$hdf5inc" = "" ] && [ "$hdf5lib" = "" ]; then
-#             check_command pkg-config
-#             if [ $have_pkg_config -eq 1 ]; then
-#                 printf "Checking if hdf5 library is available with pkg-config... "
-#                 hdf5inc=$(pkg-config hdf5 --cflags 2>/dev/null)
-#                 hdf5lib=$(pkg-config hdf5 --libs --static 2>/dev/null)
-#                 if [ "$hdf5inc" != "" ] && [ "$hdf5lib" != "" ]; then
-#                     YES
-#                     cflags="$cflags $hdf5inc"
-#                     clibs="$clibs $hdf5lib"
-#                 else
-#                     NO
-#                     red "ERROR: "
-#                     printf "HDF5 not found with pkg-config\n"
-#                     printf "Please use ./configure -h for instructions on how to manually\n"
-#                     printf "specify your HDF5 installation path or disable HDF5\n"
-#                     exit 1
-#                 fi
-#             fi
-#         elif [ "$hdf5inc" = "" ] || [ "$hdf5lib" = "" ]; then
-#             error "For custom HDF5 paths, both --hdf5inc and --hdf5lib must be given\n"
-#         else
-#             set_hdf5 "$hdf5inc" "$hdf5lib"
-#             if [ $? -ne 0 ]; then
-#                 error "HDF5 not found"
-#             fi
-#         fi
-#     else
-#         if [ ! -d $hdf5dir ]; then
-#             error "HDF5 directory $hdf5dir does not exist"
-#         fi
-#         set_hdf5 "${hdf5dir}/include" "${hdf5dir}/lib"
-#         if [ $? -ne 0 ]; then
-#             error "HDF5 not found"
-#         fi
-#     fi
-#     # Courtesy ChatGPT (comments removed)
-#     code='
-# #include <stdio.h>
-# #include <stdlib.h>
-# #include "hdf5.h"
-
-# int main() {
-#   hid_t file_id, dataset_id, dataspace_id;
-#   herr_t status;
-#   file_id = H5Fopen("test.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
-#   if (file_id < 0) {
-#     fprintf(stderr, "Failed to open HDF5 file!\\n");
-#     exit(1);
-#   }
-#   dataset_id = H5Dopen2(file_id, "test_dataset", H5P_DEFAULT);
-#   if (dataset_id < 0) {
-#     fprintf(stderr, "Failed to open HDF5 dataset!\\n");
-#     exit(1);
-#   }
-#   dataspace_id = H5Dget_space(dataset_id);
-#   if (H5Sget_simple_extent_ndims(dataspace_id) != 2) {
-#     fprintf(stderr, "Unexpected dataspace rank!\\n");
-#     exit(1);
-#   }
-#   hsize_t dims[2];
-#   status = H5Sget_simple_extent_dims(dataspace_id, dims, NULL);
-#   if (status < 0 || dims[0] != 5 || dims[1] != 10) {
-#     fprintf(stderr, "Unexpected dataspace dimensions!\\n");
-#     exit(1);
-#   }
-#   status = H5Dclose(dataset_id);
-#   status = H5Fclose(file_id);
-#   printf("HDF5 installation is OK!\\n");
-#   return 0;
-# }
-# '
-#     c_compiles "$code" $CC " $cflags " " $clibs" "Checking if compiler works with hdf5... "
-#     if [ $? -ne 0 ]; then
-#         msg="C compiler does not work with hdf5. Use ./configure --nohdf5 to disable hdf5 or
-#        run ./configure -h for more information on how to specify your hdf5 installation."
-#         error "$msg"
-#     fi
-# fi
-
-# parse_mcd()
-# {
-#     name=$(printf $2 | awk '{n=split($0, arr, "/"); print arr[n]}')
-#     if [ "$3" = "0" ]; then
-#         printf "$1- %s\n" $(blue $name)
-#     elif [ "$3" = "1" ]; then
-#         mkdir -p $(printf $2 | awk -v bd=$builddir '{sub(/^RETINAS\//, "", $0); printf("%s/%s", bd, $0)}')
-#         printf "$1- %s\n" $(green $name)
-#     else
-#         mkdir -p $(printf $2 | awk -v bd=$builddir '{sub(/^RETINAS\//, "", $0); printf("%s/%s", bd, $0)}')
-#         printf "$1- $name\n"
-#     fi
-#     file="$2/make.code.defn"
-#     if [ ! -f $file ]; then
-#         error "File $file not found"
-#     fi
-#     for sd in $(./scripts/parser awk $file "subdirs"); do
-#         sdsrcs=$(./scripts/parser awk "$2/$sd/make.code.defn" "sources")
-#         sdincs=$(./scripts/parser awk "$2/$sd/make.code.defn" "headers")
-#         sdihds=$(./scripts/parser awk "$2/$sd/make.code.defn" "install_headers")
-#         srcs="$srcs $sdsrcs"
-#         incs="$incs $sdincs"
-#         ihds="$ihds $sdihds"
-#         parse_mcd "$1  " $2/$sd $(($3+1))
-#     done
-# }
-
-# printf "Creating build directory tree (build directory: $builddir):\n"
-# count=0
-# srcs=""
-# incs=""
-# ihds=""
-# parse_mcd "  " "RETINAS" 0
-# printf "Symlinking header files in RETINAS/include to $builddir/include... "
-# rm -f $builddir/include/*
-# ln -s `pwd`/RETINAS/include/*.h $builddir/include
-# green "DONE\n"
-# printf "Creating directory $builddir/lib... "
-# mkdir -p $builddir/lib
-# green "DONE\n"
-# printf "Auto-generated by RETINAS's configuration script\n" > $builddir/.check
-
-# # Sanitize all white space (not really necessary)
-# cflags=$(printf "%s" "$cflags" | awk '{gsub(/  */, " ", $0); sub(/^ */, "", $0); sub(/ $/, "", $0); print}')
-# clibs=$(printf "%s" "$clibs" | awk '{gsub(/  */, " ", $0); sub(/^ */, "", $0); sub(/ $/, "", $0); print}')
-# srcs=$(printf "$srcs" | awk '{gsub(/  */, " ", $0); sub(/^ */, "", $0); sub(/ $/, "", $0); print}')
-# incs=$(printf "$incs" | awk '{gsub(/  */, " ", $0); sub(/^ */, "", $0); sub(/ $/, "", $0); print}')
-# ihds=$(printf "$ihds" | awk '{gsub(/  */, " ", $0); sub(/^ */, "", $0); sub(/ $/, "", $0); print}')
-# objs=$(printf "$srcs" | awk -v bd=$builddir '{gsub("RETINAS/", sprintf("%s/", bd), $0); gsub(/\.c/, ".o", $0); print}')
-# tests=$(find Unit_Tests -name unit_test_*.c)
-# if [ "$tests" = "" ]; then
-#     tnames="None"
-# else
-#     tnames=$(printf "$tests" | sort | \
-#                 awk '{
-#   split($0, a, "/")
-#   sub(/^unit_test_/, "", a[2])
-#   sub(/\.c/, "", a[2])
-#   if( NR == 1 )
-#     print "-", a[2]
-#   else
-#     printf("%26s- %s\n", " ", a[2])
-# }
-# END { print tests }
-# ')
-#     tests=$(echo $tests)
-#     tsrcs=$(echo $(find Unit_Tests -name *.c ! -name unit_test_*.c))
-#     tobjs=$(printf "$tsrcs" | awk '{
-#     gsub(/\.c/, ".o", $0)
-#     for(i=1;i<=NF;i++) {
-#       tobjs=sprintf("%s%s%s ", tobjs, "build/", $i)
-#     }
-#     print tobjs
-# }')
-#     texes=$(printf "$tests" | awk '{ gsub(/\.c/, "", $0); gsub(/Unit_Tests\//, "test/", $0); print }')
-#     texeobjs=$(printf "$tests" | awk '{ gsub(/\.c/, ".o", $0); gsub(/Unit_Tests\//, "build/Unit_Tests/", $0); print }')
-#     mkdir -p $builddir/Unit_Tests test
-# fi
-
-# printf "Generating Makefile... "
-# rm -f Makefile
-# printf "# Makefile automatically generated by $pkg's configure script\n" > Makefile
-# printf "PREFIX       = $prefix\n"                                       >> Makefile
-# printf "BUILDDIR     = $builddir\n"                                     >> Makefile
-# printf "LIBSOV       = lib${libname}_${pkg_version}$sharedext\n"        >> Makefile
-# printf "LIBSO        = lib$libname$sharedext\n"                         >> Makefile
-# printf 'BUILDLIBSOV  = $(BUILDDIR)/lib/$(LIBSOV)\n'                     >> Makefile
-# printf 'BUILDLIBSO   = $(BUILDDIR)/lib/$(LIBSO)\n'                      >> Makefile
-# printf 'PREFIXLIBSOV = $(PREFIX)/lib/$(LIBSOV)\n'                       >> Makefile
-# printf 'PREFIXLIBSO  = $(PREFIX)/lib/$(LIBSO)\n'                        >> Makefile
-# printf "CC           = $CC\n"                                           >> Makefile
-# printf "CFLAGS       = $cflags -I./RETINAS/include\n"                    >> Makefile
-# printf "CCOMPILE     = \$(CC) \$(CFLAGS)\n"                             >> Makefile
-# printf "CCOMPILEOMP  = \$(CC) \$(CFLAGS)$ompcflag\n"                    >> Makefile
-# printf "LD_FLAGS     = $clibs\n"                                        >> Makefile
-# printf "SRC          = $srcs\n"                                         >> Makefile
-# printf "OBJ          = $objs\n"                                         >> Makefile
-# printf "INCS         = $incs\n"                                         >> Makefile
-# printf "IHDS         = $ihds\n"                                         >> Makefile
-# printf 'INC         := $(INCS) $(IHDS)\n'                               >> Makefile
-# printf 'LIBS         = $(BUILDLIBSO)\n'                                 >> Makefile
-# if [ "$tests" != "" ]; then
-#     printf "TEXES    = $texes\n"      >> Makefile
-#     printf "TOBJS    = $tobjs\n"      >> Makefile
-#     printf "TEXEOBJS = $texeobjs\n\n" >> Makefile
-# fi
 # printf '\nall: grhayl tests\n\t@echo "All done!"\n\n' >> Makefile
 # printf 'grhayl: $(LIBS)\n\n'                          >> Makefile
 # printf 'tests: $(TEXES)\n\n'                          >> Makefile
@@ -821,32 +743,32 @@ printf "%s\n" $sep
 printf "$tmp\n\n"
 printf "%2sConfiguration information\n" " "
 printf "%2s-------------------------\n" " "
-printf "%4s%-24s : %s\n" " " "Version" $pkg_version
-printf "%4s%-24s : %s\n" " " "Installation prefix" $prefix
-printf "%4s%-24s : %s\n" " " "Build directory" $(Realpath $builddir)
-printf "%4s%-24s : " " " "Build C library?"
-if [ $with_c -eq 0 ]; then
-    echo "No"
-else
-    echo "Yes"
-    printf "%6s%-22s : %s\n" " " "C build type" $buildtype
-    printf "%6s%-22s : %s\n" " " "C compiler flags" "$ccflags"
-    printf "%6s%-22s : %s\n" " " "C linking flags" "$cclibs"
-    printf "%6s%-22s : %s\n" " " "C library precision" $precision
-fi
-printf "%4s%-24s : " " " "Build CUDA library?"
-if [ $with_c -eq 0 ]; then
-    echo "No"
-else
-    echo "Yes"
-    printf "%6s%-22s : %s\n" " " "CUDA build type" $buildtype
-    printf "%6s%-22s : %s\n" " " "CUDA compiler flags" "$nvccflags"
-    printf "%6s%-22s : %s\n" " " "CUDA linking flags" "$nvcclibs"
-    printf "%6s%-22s : %s\n" " " "CUDA library precision" $precision
-fi
+printf "%4s%-21s : %s\n" " " "Version" $pkg_version
+printf "%4s%-21s : %s\n" " " "Installation prefix" $prefix
+printf "%4s%-21s : %s\n" " " "Build directory" $(Realpath $builddir)
 if [ $silent -eq 0 ]; then
-    printf "%4s%-24s : %s\n" " " "Silent Makefile" "No"
+    printf "%4s%-21s : %s\n" " " "Silent Makefile" "No"
 else
-    printf "%4s%-24s : %s\n" " " "Silent Makefile" "Yes"
+    printf "%4s%-21s : %s\n" " " "Silent Makefile" "Yes"
+fi
+printf "%4s%-21s : " " " "Build C library?"
+if [ $with_c -eq 0 ]; then
+    echo "No"
+else
+    echo "Yes"
+    printf "%6s%-19s : %s\n" " " "C build type" $buildtype
+    printf "%6s%-19s : %s\n" " " "C compiler flags" "$ccflags"
+    printf "%6s%-19s : %s\n" " " "C linking flags" "$cclibs"
+    printf "%6s%-19s : %s\n" " " "C library precision" $precision
+fi
+printf "%4s%-21s : " " " "Build CUDA library?"
+if [ $with_cuda -eq 0 ]; then
+    echo "No"
+else
+    echo "Yes"
+    printf "%6s%-19s : %s\n" " " "CUDA build type" $buildtype
+    printf "%6s%-19s : %s\n" " " "CUDA compiler flags" "$nvccflags"
+    printf "%6s%-19s : %s\n" " " "CUDA linking flags" "$nvcclibs"
+    printf "%6s%-19s : %s\n" " " "CUDA library precision" $precision
 fi
 printf "%s\n" $sep
