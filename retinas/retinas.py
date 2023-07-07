@@ -235,6 +235,8 @@ class retinas:
                        self.shot_noise,
                        self.offset)
 
+        self.initialized = True
+
     def __del__(self):
         """ Class destructor """
         self.finalize()
