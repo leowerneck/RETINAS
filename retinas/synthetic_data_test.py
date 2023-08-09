@@ -14,9 +14,9 @@ from pyretinas import Pyretinas
 
 libpath_c          = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas.so")
 libpath_cuda       = pjoin("..", "lib", "x86_64-linux-gnu", "libretinas_cuda.so")
-N_horizontal       = 256
-N_vertical         = 128
-upsample_factor    = 256
+N_horizontal       = 512
+N_vertical         = 512
+upsample_factor    = 1024
 time_constant      = 10
 offset             = 5.76
 shot_noise         = False
@@ -25,7 +25,8 @@ w                  = 8
 spread_factor      = 0.95
 outdir             = "out"
 N_images           = 1000
-center_first_image = 'max' # min or None also possible
+center_first_image = "max" # min or None also possible
+precision          = "double"
 
 print("(RETINAS) This routine will test all three implementations (C, CUDA, Python).")
 print("(RETINAS) Neatly formatted diagnostics can be found in the file diagnostics.txt.")
@@ -36,8 +37,8 @@ imdir = generate_synthetic_image_data_set(outdir, N_images,
                                           A=A, w=w, offset=offset,
                                           spread_factor=spread_factor)
 
-rc    = retinas(libpath_c   , N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset, center_first_image=center_first_image, precision="single")
-rcuda = retinas(libpath_cuda, N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset, center_first_image=center_first_image, precision="single")
+rc    = retinas(libpath_c   , N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset, center_first_image=center_first_image, precision=precision)
+rcuda = retinas(libpath_cuda, N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset, center_first_image=center_first_image, precision=precision)
 rpy   = Pyretinas(            N_horizontal, N_vertical, upsample_factor, time_constant, shot_noise=shot_noise, offset=offset, center_first_image=center_first_image)
 
 print("(RETINAS) Beginning image processing")
@@ -56,16 +57,26 @@ finfo.write("%*s | %*s%*s | %*s%*s\n"%(n, "Implementation",
                                        "Vert. Displ.",
                                        int(22-(22+len("Vert. Displ."))//2),
                                        " "))
+
+tc = 0
+tcuda = 0
+tpy = 0
 finfo.write(div+"\n")
 with open(pjoin(outdir, "results.txt"), "w") as f:
     for i in range(N_images+1):
         im    = fromfile(pjoin(imdir, f"image_{i+1:02d}.bin"), dtype=uint16).reshape(N_vertical,N_horizontal)
+        t = time()
         bc    = rc.preprocess_new_image_and_compute_brightness(im)
-        bcuda = rcuda.preprocess_new_image_and_compute_brightness(im)
-        bpy   = rpy.preprocess_new_image_and_compute_brightness(im)
         dc    = rc.compute_displacements_and_update_ref_image()
+        tc   += time() - t
+        t = time()
+        bcuda = rcuda.preprocess_new_image_and_compute_brightness(im)
         dcuda = rcuda.compute_displacements_and_update_ref_image()
+        tcuda += time() - t
+        t = time()
+        bpy   = rpy.preprocess_new_image_and_compute_brightness(im)
         dpy   = rpy.compute_displacements_and_update_ref_image()
+        tpy  += time() - t
         finfo.write("%*s%*s | %22.15e | %22.15e\n"%(int(n+len("C"))//2, "C", n-(n+len("C"))//2, " ", dc[0], dc[1]))
         finfo.write("%*s%*s | %22.15e | %22.15e\n"%(int(n+len("CUDA"))//2, "CUDA", n-(n+len("CUDA"))//2, " ", dcuda[0], dcuda[1]))
         finfo.write("%*s%*s | %22.15e | %22.15e\n"%(int(n+len("Python"))//2, "Python", n-(n+len("Python"))//2, " ", dpy[0], dpy[1]))
@@ -79,3 +90,6 @@ rcuda.finalize()
 rpy.finalize()
 end = time()
 print(f"(RETINAS) Finished processing {N_images} images of size {N_horizontal} x {N_vertical} in {end-start:.2f} seconds")
+print(f"(RETINAS) Total / average time C      : {tc:5.2f} s / {tc/N_images*1000:5.2f} ms")
+print(f"(RETINAS) Total / average time CUDA   : {tcuda:5.2f} s / {tcuda/N_images*1000:5.2f} ms")
+print(f"(RETINAS) Total / average time Python : {tpy:5.2f} s / {tpy/N_images*1000:5.2f} ms")
