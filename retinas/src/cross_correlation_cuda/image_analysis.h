@@ -110,15 +110,16 @@ typedef struct state_struct {
   bool shot_noise_method;
   int N_horizontal, N_vertical;
   REAL upsample_factor, A0, B1, shift;
-  uint16_t *aux_array_int;            // GPU (device)
-  REAL *aux_array_real;               // GPU (device)
-  COMPLEX *aux_array1;                // GPU (device)
-  COMPLEX *aux_array2;                // GPU (device)
-  COMPLEX *aux_array3;                // GPU (device)
-  COMPLEX *new_image_time;            // GPU (device)
-  COMPLEX *new_image_freq;            // GPU (device)
-  COMPLEX *ref_image_freq;            // GPU (device)
-  COMPLEX *reciprocal_new_image_time; // GPU (device)
+  uint16_t *aux_array_int;
+  REAL *aux_array_real;
+  COMPLEX *aux_array1;
+  COMPLEX *aux_array2;
+  COMPLEX *aux_array3;
+  COMPLEX *new_image_time;
+  COMPLEX *new_image_freq;
+  COMPLEX *ref_image_freq;
+  COMPLEX *reciprocal_new_image_time;
+  COMPLEX *image_sum_freq;
 
   // No memory is allocated for these, but they are
   // useful and more descriptive than "aux_array"

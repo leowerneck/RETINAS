@@ -51,6 +51,7 @@ state_struct *state_initialize(
   state->B1                = B1;
   state->shot_noise_method = shot_noise_method;
   state->shift             = shift;
+  state->image_counter     = 0;
 
   // Step 3: Define auxiliary variables
   const int NhNv         = N_horizontal * N_vertical;
@@ -70,6 +71,7 @@ state_struct *state_initialize(
   cudaMalloc(&state->new_image_freq           , sizeof(COMPLEX)*NhNv);
   cudaMalloc(&state->reciprocal_new_image_time, sizeof(COMPLEX)*NhNv);
   cudaMalloc(&state->ref_image_freq           , sizeof(COMPLEX)*NhNv);
+  cudaMalloc(&state->image_sum_freq           , sizeof(COMPLEX)*NhNv);
 
   // Step 4.c: Set additional, auxiliary arrays
   // Step 4.c.1: Pointers that map to aux_array1

@@ -1,7 +1,7 @@
 #include "image_analysis.h"
 
 extern "C" __host__
-void compute_displacements_and_update_reference_image_shot_noise(
+void compute_displacements_and_add_new_image_to_sum_shot_noise(
     state_struct *restrict state,
     REAL *restrict displacements ) {
   /*
