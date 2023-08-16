@@ -5,8 +5,7 @@ static void typecast_and_copy_1d_gpu(
     const int n,
     const uint16_t *restrict input_array,
     REAL *restrict real_array,
-    COMPLEX *restrict complex_array,
-    COMPLEX *restrict image_sum_freq ) {
+    COMPLEX *restrict complex_array ) {
   /*
    *  Typecast the input image from uint16 to REAL; copy into complex array.
    *
@@ -33,8 +32,6 @@ static void typecast_and_copy_1d_gpu(
     const REAL z_real = (REAL)input_array[i];
     real_array[i]     = z_real;
     complex_array[i]  = MAKE_COMPLEX(z_real,0.0);
-    // Use this to initialize the image sum to zero
-    image_sum_freq[i] = MAKE_COMPLEX(0.0, 0.0);
   }
 }
 
@@ -77,8 +74,7 @@ REAL typecast_input_image_and_compute_brightness(
   typecast_and_copy_1d_gpu<<<MIN(Nv,512),MIN(Nh,512)>>>(NhNv,
                                                         state->aux_array_int,
                                                         state->aux_array_real,
-                                                        state->new_image_time,
-                                                        state->image_sum_freq);
+                                                        state->new_image_time);
 
   // Step 4: Compute the brightness
   REAL brightness;

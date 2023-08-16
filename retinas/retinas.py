@@ -154,7 +154,7 @@ class retinas:
         if self.shot_noise:
             setup_library_function(lib.compute_displacements_and_add_new_image_to_sum_shot_noise,
                                    [c_void_p, self.c_real_p], None)
-            self.compute_displacements_and_add_new_image_to_sum = \
+            self.lib_compute_displacements_and_add_new_image_to_sum = \
                 lib.compute_displacements_and_add_new_image_to_sum_shot_noise
         else:
             setup_library_function(lib.compute_displacements_and_add_new_image_to_sum,
@@ -167,8 +167,15 @@ class retinas:
         #     const REAL *restrict displacements,
         #     state_struct *restrict state )
         setup_library_function(lib.update_reference_image_from_image_sum,
-            [self.c_real_p, c_void_p], None)
-        self.update_reference_image_from_image_sum = lib.update_reference_image_from_image_sum
+            [c_void_p], None)
+        self.lib_update_reference_image_from_image_sum = lib.update_reference_image_from_image_sum
+
+        # Step 3.b.12: The add_new_image_to_sum function
+        # void add_new_image_to_sum(
+        #     const REAL *restrict displacements,
+        #     state_struct *restrict state );
+        setup_library_function(lib.add_new_image_to_sum, [self.c_real_p, c_void_p], None)
+        self.lib_add_new_image_to_sum = lib.add_new_image_to_sum
 
 
     def __init__(self, libpath, N_horizontal, N_vertical, upsample_factor,
@@ -323,3 +330,43 @@ class retinas:
         self.lib_compute_displacements_and_update_reference_image(
             self.state, cast(displacements.ctypes.data, self.c_real_p))
         return displacements
+
+    def compute_displacements_and_add_new_image_to_sum(self):
+        """
+        Compute the displacements and add new image to the sum.
+
+        Inputs
+        ------
+          None.
+
+        Returns
+        -------
+          displacements : NumPy array
+            NumPy array containing the displacements.
+        """
+
+        if self.first_image:
+            self.lib_set_first_reference_image(self.state)
+            self.first_image = False
+            return array([self.h_0, self.v_0])
+
+        displacements = array([0, 0], dtype=self.real)
+        self.lib_compute_displacements_and_add_new_image_to_sum(
+            self.state, cast(displacements.ctypes.data, self.c_real_p))
+        return displacements
+
+    def update_reference_image_from_image_sum(self):
+        """
+        Update the reference image based on the image sum. Then reset the image
+        sum to the new reference image and reset the image counter to one.
+
+        Inputs
+        ------
+          None.
+
+        Returns
+        -------
+          Nothing.
+        """
+
+        self.lib_update_reference_image_from_image_sum(self.state)

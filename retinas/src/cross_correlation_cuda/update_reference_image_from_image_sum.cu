@@ -18,9 +18,7 @@ static void update_reference_image_from_image_sum_gpu(
 }
 
 extern "C" __host__
-void update_reference_image_from_image_sum(
-    const REAL *restrict displacements,
-    state_struct *restrict state ) {
+void update_reference_image_from_image_sum( state_struct *restrict state ) {
   /*
    *  Construct the next reference image using:
    *   ref_image_new = A0*new_image_shifted + B1*ref_image_old.

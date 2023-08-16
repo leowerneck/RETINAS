@@ -110,6 +110,9 @@ void add_new_image_to_sum(
     const REAL *restrict displacements,
     state_struct *restrict state );
 
+__host__
+void update_reference_image_from_image_sum( state_struct *restrict state );
+
 // This function is implemented in absolute_value_2d.cu
 __host__
 void absolute_value_2d(

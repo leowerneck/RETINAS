@@ -25,7 +25,6 @@ static void shift_new_image_add_to_image_sum_gpu(
     const REAL A0,
     const REAL B1,
     const COMPLEX *new_image_freq,
-    const COMPLEX *ref_image_freq,
     const COMPLEX *reverse_shifts,
     COMPLEX *image_sum_freq ) {
 
@@ -33,8 +32,8 @@ static void shift_new_image_add_to_image_sum_gpu(
   int stride = blockDim.x*gridDim.x;
   for(int i=tid;i<N_horizontal*N_vertical;i+=stride) {
     const COMPLEX product = CMUL(new_image_freq[i], reverse_shifts[i]);
-    image_sum_freq[i].x += A0*product.x + B1*ref_image_freq[i].x;
-    image_sum_freq[i].y += A0*product.y + B1*ref_image_freq[i].y;
+    image_sum_freq[i].x += product.x;
+    image_sum_freq[i].y += product.y;
   }
 }
 
@@ -68,7 +67,7 @@ void add_new_image_to_sum(
 
   // Step 2: Now shift the new image and add it to the accumulator
   shift_new_image_add_to_image_sum_gpu<<<MIN(Nv,512),MIN(Nh,512)>>>(
-    Nh, Nv, state->A0, state->B1, state->new_image_freq, state->ref_image_freq,
+    Nh, Nv, state->A0, state->B1, state->new_image_freq,
     state->shift_matrix, state->image_sum_freq);
 
   state->image_counter++;
