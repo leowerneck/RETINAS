@@ -32,6 +32,8 @@ static void typecast_and_copy_1d_gpu(
     const REAL z_real = (REAL)input_array[i];
     real_array[i]     = z_real;
     complex_array[i]  = MAKE_COMPLEX(z_real,0.0);
+    // Use this to initialize the image sum to zero
+    image_sum_freq[i] = MAKE_COMPLEX(0.0, 0.0);
   }
 }
 

@@ -38,6 +38,8 @@ static void typecast_shift_square_reciprocal_and_copy_1d_gpu(
     real_array[i]       = z_real;
     reciprocal_image[i] = MAKE_COMPLEX(1.0/z_shift,0.0);
     squared_image[i]    = MAKE_COMPLEX(z_shift*z_shift,0.0);
+    // Use this to initialize the image sum to zero
+    image_sum_freq[i] = MAKE_COMPLEX(0.0, 0.0);
   }
 }
 
