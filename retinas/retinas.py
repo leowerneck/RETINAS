@@ -147,6 +147,30 @@ class retinas:
             self.lib_compute_displacements_and_update_reference_image = \
                 lib.compute_displacements_and_update_reference_image
 
+        # Step 3.b.11: The compute_displacements_and_add_new_image_to_sum function
+        # void compute_displacements_and_add_new_image_to_sum(
+        #     state_struct *restrict state,
+        #     REAL *restrict displacements );
+        if self.shot_noise:
+            setup_library_function(lib.compute_displacements_and_add_new_image_to_sum_shot_noise,
+                                   [c_void_p, self.c_real_p], None)
+            self.compute_displacements_and_add_new_image_to_sum = \
+                lib.compute_displacements_and_add_new_image_to_sum_shot_noise
+        else:
+            setup_library_function(lib.compute_displacements_and_add_new_image_to_sum,
+                                   [c_void_p, self.c_real_p], None)
+            self.compute_displacements_and_add_new_image_to_sum = \
+                lib.compute_displacements_and_add_new_image_to_sum
+
+        # Step 3.b.11: The update_reference_image_from_image_sum function
+        # void update_reference_image_from_image_sum(
+        #     const REAL *restrict displacements,
+        #     state_struct *restrict state )
+        setup_library_function(lib.update_reference_image_from_image_sum,
+            [self.c_real_p, c_void_p], None)
+        self.update_reference_image_from_image_sum = lib.update_reference_image_from_image_sum
+
+
     def __init__(self, libpath, N_horizontal, N_vertical, upsample_factor,
                  time_constant, precision="single", shot_noise=True, offset=0,
                  center_first_image='max'):
@@ -234,8 +258,6 @@ class retinas:
                        self.B1,
                        self.shot_noise,
                        self.offset)
-
-        self.initialized = True
 
     def __del__(self):
         """ Class destructor """

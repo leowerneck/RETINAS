@@ -105,6 +105,11 @@ void compute_vertical_kernel(
     const REAL *restrict sample_region_offset,
     state_struct *restrict state );
 
+__host__
+void add_new_image_to_sum(
+    const REAL *restrict displacements,
+    state_struct *restrict state );
+
 // This function is implemented in absolute_value_2d.cu
 __host__
 void absolute_value_2d(

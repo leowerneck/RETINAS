@@ -7,7 +7,8 @@ static void typecast_shift_square_reciprocal_and_copy_1d_gpu(
     const uint16_t *restrict input_array,
     REAL *restrict real_array,
     COMPLEX *restrict reciprocal_image,
-    COMPLEX *restrict squared_image ) {
+    COMPLEX *restrict squared_image,
+    COMPLEX *restrict image_sum_freq ) {
   /*
    *  Typecast the input image from uint16 to REAL; copy into complex array.
    *
@@ -38,6 +39,8 @@ static void typecast_shift_square_reciprocal_and_copy_1d_gpu(
     real_array[i]       = z_real;
     reciprocal_image[i] = MAKE_COMPLEX(1.0/z_shift,0.0);
     squared_image[i]    = MAKE_COMPLEX(z_shift*z_shift,0.0);
+    // Use this to initialize the image sum to zero
+    image_sum_freq[i] = MAKE_COMPLEX(0.0, 0.0);
   }
 }
 
@@ -84,7 +87,8 @@ REAL typecast_input_image_and_compute_brightness_shot_noise(
       state->aux_array_int,
       state->aux_array_real,
       state->reciprocal_new_image_time,
-      state->new_image_time );
+      state->new_image_time,
+      state->image_sum_freq );
 
   // Step 4: Compute the brightness
   REAL brightness;
