@@ -9,7 +9,6 @@ c_srcs = files(
   'displacements_sub_pixel_estimate.c',
   'get_reference_image_freq.c',
   'get_reference_image_time.c',
-  'gpu_works.c',
   'initialize_image_sum.c',
   'set_first_reference_image.c',
   'state_finalize.c',
