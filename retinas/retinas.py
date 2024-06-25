@@ -159,7 +159,7 @@ class retinas:
         else:
             setup_library_function(lib.compute_displacements_and_add_new_image_to_sum,
                                    [c_void_p, self.c_real_p], None)
-            self.compute_displacements_and_add_new_image_to_sum = \
+            self.lib_compute_displacements_and_add_new_image_to_sum = \
                 lib.compute_displacements_and_add_new_image_to_sum
 
         # Step 3.b.11: The update_reference_image_from_image_sum function
