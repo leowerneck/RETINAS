@@ -11,6 +11,7 @@ from utils import setup_library_function
 from utils import center_array_max_return_displacements
 from utils import center_array_min_return_displacements
 
+
 class retinas:
     """ Main code class """
 
@@ -53,7 +54,7 @@ class retinas:
         #     const bool shot_noise_method,
         #     const REAL offset );
         setup_library_function(lib.state_initialize,
-            [c_int, c_int, self.c_real, self.c_real, self.c_real, c_bool, self.c_real], c_void_p)
+                               [c_int, c_int, self.c_real, self.c_real, self.c_real, c_bool, self.c_real], c_void_p)
         self.lib_state_initialize = lib.state_initialize
 
         # Step 3.b.2: The state_finalize function
@@ -67,12 +68,12 @@ class retinas:
         #     state_struct *restrict state );
         if self.shot_noise:
             setup_library_function(lib.typecast_input_image_and_compute_brightness_shot_noise,
-                [self.c_uint16_p, c_void_p], self.c_real)
+                                   [self.c_uint16_p, c_void_p], self.c_real)
             self.lib_typecast_input_image_and_compute_brightness = \
                 lib.typecast_input_image_and_compute_brightness_shot_noise
         else:
             setup_library_function(lib.typecast_input_image_and_compute_brightness,
-                [self.c_uint16_p, c_void_p], self.c_real)
+                                   [self.c_uint16_p, c_void_p], self.c_real)
             self.lib_typecast_input_image_and_compute_brightness = \
                 lib.typecast_input_image_and_compute_brightness
 
@@ -83,7 +84,8 @@ class retinas:
 
         # Step 3.b.5: The cross_correlate_ref_and_new_images function
         # void cross_correlate_ref_and_new_images(state_struct *restrict state);
-        setup_library_function(lib.cross_correlate_ref_and_new_images, [c_void_p], None)
+        setup_library_function(
+            lib.cross_correlate_ref_and_new_images, [c_void_p], None)
         self.lib_cross_correlate_ref_and_new_images = lib.cross_correlate_ref_and_new_images
 
         # Step 3.b.6: The displacements_full_pixel_estimate function
@@ -92,12 +94,12 @@ class retinas:
         #     REAL *restrict displacements );
         if self.shot_noise:
             setup_library_function(lib.displacements_full_pixel_estimate_shot_noise,
-                [c_void_p, self.c_real_p], None)
+                                   [c_void_p, self.c_real_p], None)
             self.lib_displacements_full_pixel_estimate = \
                 lib.displacements_full_pixel_estimate_shot_noise
         else:
             setup_library_function(lib.displacements_full_pixel_estimate,
-                [c_void_p, self.c_real_p], None)
+                                   [c_void_p, self.c_real_p], None)
             self.lib_displacements_full_pixel_estimate = \
                 lib.displacements_full_pixel_estimate
 
@@ -107,12 +109,12 @@ class retinas:
         #     REAL *restrict displacements );
         if self.shot_noise:
             setup_library_function(lib.displacements_sub_pixel_estimate_shot_noise,
-                [c_void_p, self.c_real_p], None)
+                                   [c_void_p, self.c_real_p], None)
             self.lib_displacements_sub_pixel_estimate = \
                 lib.displacements_sub_pixel_estimate_shot_noise
         else:
             setup_library_function(lib.displacements_sub_pixel_estimate,
-                [c_void_p, self.c_real_p], None)
+                                   [c_void_p, self.c_real_p], None)
             self.lib_displacements_sub_pixel_estimate = \
                 lib.displacements_sub_pixel_estimate
 
@@ -121,7 +123,7 @@ class retinas:
         #     state_struct *restrict state,
         #     REAL *restrict displacements );
         setup_library_function(lib.upsample_around_displacements,
-            [c_void_p, self.c_real_p], None)
+                               [c_void_p, self.c_real_p], None)
         self.lib_upsample_around_displacements = lib.upsample_around_displacements
 
         # Step 3.b.9: The update_reference_image function
@@ -129,7 +131,7 @@ class retinas:
         #     const REAL *restrict displacements,
         #     state_struct *restrict state );
         setup_library_function(lib.update_reference_image,
-            [self.c_real_p, c_void_p], None)
+                               [self.c_real_p, c_void_p], None)
         self.lib_update_reference_image = lib.update_reference_image
 
         # Step 3.b.10: The compute_displacements_and_update_reference_image function
@@ -138,12 +140,12 @@ class retinas:
         #     REAL *restrict displacements );
         if self.shot_noise:
             setup_library_function(lib.compute_displacements_and_update_reference_image_shot_noise,
-                       [c_void_p, self.c_real_p], None)
+                                   [c_void_p, self.c_real_p], None)
             self.lib_compute_displacements_and_update_reference_image = \
                 lib.compute_displacements_and_update_reference_image_shot_noise
         else:
             setup_library_function(lib.compute_displacements_and_update_reference_image,
-                       [c_void_p, self.c_real_p], None)
+                                   [c_void_p, self.c_real_p], None)
             self.lib_compute_displacements_and_update_reference_image = \
                 lib.compute_displacements_and_update_reference_image
 
@@ -167,21 +169,16 @@ class retinas:
         #     const REAL *restrict displacements,
         #     state_struct *restrict state )
         setup_library_function(lib.update_reference_image_from_image_sum,
-            [c_void_p], None)
+                               [c_void_p], None)
         self.lib_update_reference_image_from_image_sum = lib.update_reference_image_from_image_sum
 
         # Step 3.b.12: The add_new_image_to_sum function
         # void add_new_image_to_sum(
         #     const REAL *restrict displacements,
         #     state_struct *restrict state );
-        setup_library_function(lib.add_new_image_to_sum, [self.c_real_p, c_void_p], None)
+        setup_library_function(lib.add_new_image_to_sum, [
+                               self.c_real_p, c_void_p], None)
         self.lib_add_new_image_to_sum = lib.add_new_image_to_sum
-
-        # Step 3.c: The gpu_works function
-        # bool gpu_works()
-        setup_library_function(lib.gpu_works, [], c_bool)
-        self.gpu_works = lib.gpu_works
-
 
     def __init__(self, libpath, N_horizontal, N_vertical, upsample_factor,
                  time_constant, precision="single", shot_noise=True, offset=0,
@@ -226,36 +223,36 @@ class retinas:
 
         # Step 3.a: Set C types
         if precision.lower() == "single":
-            self.real     = single
-            self.c_real   = c_float
+            self.real = single
+            self.c_real = c_float
             self.c_real_p = POINTER(c_float)
         elif precision.lower() == "double":
-            self.real     = double
-            self.c_real   = c_double
+            self.real = double
+            self.c_real = c_double
             self.c_real_p = POINTER(c_double)
         else:
             raise ValueError(f'Unsupported precision {precision}')
-        self.c_uint16_p   = POINTER(c_uint16)
+        self.c_uint16_p = POINTER(c_uint16)
 
         # Step 3.b: Initialize additional parameters
-        self.N_horizontal       = N_horizontal
-        self.N_vertical         = N_vertical
-        self.upsample_factor    = upsample_factor
+        self.N_horizontal = N_horizontal
+        self.N_vertical = N_vertical
+        self.upsample_factor = upsample_factor
         if time_constant is not None:
-            self.time_constant  = time_constant
-            self.x              = exp(-1/time_constant)
-            self.A0             = 1-self.x
-            self.B1             = self.x
+            self.time_constant = time_constant
+            self.x = exp(-1/time_constant)
+            self.A0 = 1-self.x
+            self.B1 = self.x
         else:
-            self.A0             = -1
-            self.B1             = -1
-        self.libpath            = libpath
-        self.precision          = precision
-        self.first_image        = True
-        self.shot_noise         = shot_noise
-        self.offset             = offset if shot_noise else -1
-        self.h_0                = 0
-        self.v_0                = 0
+            self.A0 = -1
+            self.B1 = -1
+        self.libpath = libpath
+        self.precision = precision
+        self.first_image = True
+        self.shot_noise = shot_noise
+        self.offset = offset if shot_noise else -1
+        self.h_0 = 0
+        self.v_0 = 0
         self.center_first_image = center_first_image
 
         # Step 3.c: Initialize library functions
@@ -263,13 +260,13 @@ class retinas:
 
         # Step 3.d: Initialize the state object
         self.state = self.lib_state_initialize(
-                       self.N_horizontal,
-                       self.N_vertical,
-                       self.upsample_factor,
-                       self.A0,
-                       self.B1,
-                       self.shot_noise,
-                       self.offset)
+            self.N_horizontal,
+            self.N_vertical,
+            self.upsample_factor,
+            self.A0,
+            self.B1,
+            self.shot_noise,
+            self.offset)
 
     def __del__(self):
         """ Class destructor """
@@ -294,7 +291,8 @@ class retinas:
         if self.first_image:
             if self.center_first_image is not None:
                 if not isinstance(self.center_first_image, str):
-                    raise TypeError("center_first_image can only be None or of type str")
+                    raise TypeError(
+                        "center_first_image can only be None or of type str")
 
                 if self.center_first_image.lower() == 'max':
                     new_image, self.h_0, self.v_0 = \
@@ -303,7 +301,8 @@ class retinas:
                     new_image, self.h_0, self.v_0 = \
                         center_array_min_return_displacements(new_image)
                 else:
-                    raise ValueError("center_first_image can only be 'max', 'min', or None")
+                    raise ValueError(
+                        "center_first_image can only be 'max', 'min', or None")
 
         return self.lib_typecast_input_image_and_compute_brightness(
             cast(new_image.ctypes.data, self.c_uint16_p), self.state)
