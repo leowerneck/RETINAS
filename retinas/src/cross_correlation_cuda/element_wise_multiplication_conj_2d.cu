@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 __global__
 static void element_wise_multiplication_conj_1d_gpu(

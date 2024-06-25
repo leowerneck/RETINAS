@@ -17,6 +17,7 @@ cuda_srcs = files(
   'element_wise_multiplication_conj_2d.cu',
   'find_maxima_minima.cu',
   'get_reference_image.cu',
+  'gpu_works.cu',
   'print_arrays.cu',
   'set_first_reference_image.cu',
   'state_finalize.cu',

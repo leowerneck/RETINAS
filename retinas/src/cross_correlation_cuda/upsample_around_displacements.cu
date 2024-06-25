@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 __host__ static inline
 void complex_matrix_multiply(
@@ -95,7 +95,7 @@ void upsample_around_displacements(
    *      state->horizontal_kernel == state->aux_array2
    *      state->vertical_kernel   == state->aux_array2
    *
-   *    For more information, see image_analysis.h and state_initialize.cu.
+   *    For more information, see retinas.h and state_initialize.cu.
    */
 
   // Step 1: Set basic variables

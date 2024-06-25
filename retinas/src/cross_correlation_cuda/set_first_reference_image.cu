@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 __global__
 static void init_image_sum_to_ref_image_gpu(

@@ -177,6 +177,11 @@ class retinas:
         setup_library_function(lib.add_new_image_to_sum, [self.c_real_p, c_void_p], None)
         self.lib_add_new_image_to_sum = lib.add_new_image_to_sum
 
+        # Step 3.c: The gpu_works function
+        # bool gpu_works()
+        setup_library_function(lib.gpu_works, [], c_bool)
+        self.gpu_works = lib.gpu_works
+
 
     def __init__(self, libpath, N_horizontal, N_vertical, upsample_factor,
                  time_constant, precision="single", shot_noise=True, offset=0,

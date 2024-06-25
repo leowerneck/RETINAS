@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 extern "C" __host__
 void cross_correlate_ref_and_new_images( state_struct *restrict state ) {

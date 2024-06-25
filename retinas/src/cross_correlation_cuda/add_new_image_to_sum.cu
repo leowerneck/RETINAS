@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 /*
  *  Construct the next reference image using:

@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 extern "C" __host__
 void displacements_sub_pixel_estimate_shot_noise(

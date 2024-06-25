@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 extern "C" __host__
 void compute_displacements_and_add_new_image_to_sum(
@@ -9,7 +9,7 @@ void compute_displacements_and_add_new_image_to_sum(
    *
    *  Inputs
    *  ------
-   *    state         : The state object (see image_analysis.h).
+   *    state         : The state object (see retinas.h).
    *    displacements : Stores the result.
    *
    *  Returns

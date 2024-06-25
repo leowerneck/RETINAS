@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 __host__
 void get_reference_image(
@@ -9,7 +9,7 @@ void get_reference_image(
    *
    *  Inputs
    *  ------
-   *    state          : The state object (see image_analysis.h).
+   *    state          : The state object (see retinas.h).
    *    ref_image_time : Real array that stores the reference image.
    *
    *  Returns

@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 __global__
 static void update_reference_image_from_image_sum_gpu(

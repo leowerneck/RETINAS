@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 __global__
 void print_1d_array_complex_gpu(

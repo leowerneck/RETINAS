@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 extern "C" __host__
 state_struct *state_initialize(

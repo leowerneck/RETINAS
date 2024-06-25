@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 __global__
 static void shift_new_image_add_to_reference_image_gpu(

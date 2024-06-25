@@ -1,11 +1,15 @@
-void test_if_gpu_works_() {
+#include "retinas.h"
+
+__global__ void test_gpu() {
   printf("success!\n");
 }
 
-bool test_if_gpu_works() {
-  printf("Testing if GPU works... ");
+extern "C" __host__
+bool gpu_works() {
+  info("Testing if GPU works... ");
   fflush(stdout);
-  test_if_gpu_works_<<<1, 1>>>();
+  test_gpu<<<1, 1>>>();
+  cudaDeviceSynchronize();
   cudaError_t err = cudaGetLastError();
   if(err != cudaSuccess) {
     printf("failed!\n");

@@ -1,4 +1,4 @@
-#include "image_analysis.h"
+#include "retinas.h"
 
 // GPU kernel
 __global__
