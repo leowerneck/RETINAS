@@ -634,52 +634,42 @@ printf "CFLAGS        = $cbuildflags\n"                                     >> M
 printf "CCOMPILE      = \$(CC) \$(CFLAGS)\n"                                >> Makefile
 printf "PREFIX        = $prefix\n"                                          >> Makefile
 printf "BUILDDIR      = $builddir\n"                                        >> Makefile
-if [ "$precision" = "both" ]; then
-    printf "LIBCSOD       = lib${libname}c.so\n"                            >> Makefile
-    printf "LIBCSOS       = lib${libname}cf.so\n"                           >> Makefile
-    printf 'BUILDCLIBSOD  = $(BUILDDIR)/lib/$(LIBCSOD)\n'                   >> Makefile
-    printf 'BUILDCLIBSOS  = $(BUILDDIR)/lib/$(LIBCSOS)\n'                   >> Makefile
-    printf 'PREFIXCLIBSOD = $(PREFIX)/lib/$(LIBCSOD)\n'                     >> Makefile
-    printf 'PREFIXCLIBSOS = $(PREFIX)/lib/$(LIBCSOS)\n'                     >> Makefile
-    printf "LD_FLAGSD     = $cbuildlibs $fftw_libflags\n"                   >> Makefile
-    printf "LD_FLAGSS     = $cbuildlibs $fftwf_libflags\n"                  >> Makefile
-    printf "COBJD         = " >> Makefile; echo $cobjsd                     >> Makefile
-    printf "COBJS         = " >> Makefile; echo $cobjsf                     >> Makefile
-elif [ "$precision" = "single" ]; then
+if [ "$precision" = "both" ] || [ "$precision" = "single" ]; then
     printf "LIBCSOS       = lib${libname}cf.so\n"                           >> Makefile
     printf 'BUILDLIBCSOS  = $(BUILDDIR)/lib/$(LIBCSOS)\n'                   >> Makefile
-    printf 'PREFIXCLIBSOS = $(PREFIX)/lib/$(LIBCSOS)\n'                     >> Makefile
+    printf 'PREFIXLIBCSOS = $(PREFIX)/lib/$(LIBCSOS)\n'                     >> Makefile
     printf "LD_FLAGSS     = $cbuildlibs $fftwf_libflags\n"                  >> Makefile
     printf "COBJS         = " >> Makefile; echo $cobjsf                     >> Makefile
-else
+fi
+if [ "$precision" = "both" ] || [ "$precision" = "double" ]; then
     printf "LIBCSOD       = lib${libname}c.so\n"                            >> Makefile
     printf 'BUILDLIBCSOD  = $(BUILDDIR)/lib/$(LIBCSOD)\n'                   >> Makefile
-    printf 'PREFIXCLIBSOD = $(PREFIX)/lib/$(LIBCSOD)\n'                     >> Makefile
+    printf 'PREFIXLIBCSOD = $(PREFIX)/lib/$(LIBCSOD)\n'                     >> Makefile
     printf "LD_FLAGSD     = $cbuildlibs $fftw_libflags\n"                   >> Makefile
     printf "COBJD         = " >> Makefile; echo $cobjsd                     >> Makefile
 fi
 printf "CSRC          = " >> Makefile; echo $csrcs                          >> Makefile
 printf "CINC          = " >> Makefile; echo $cincs                          >> Makefile
-printf '\nall: $(BUILDCLIBSOD) $(BUILDCLIBSOS)\n\n'                         >> Makefile
+printf '\nall: $(BUILDLIBCSOD) $(BUILDLIBCSOS)\n\n'                         >> Makefile
 
 if [ $silent -eq 0 ]; then
-    printf '$(BUILDCLIBSOD): $(COBJD)\n'                                    >> Makefile
+    printf '$(BUILDLIBCSOD): $(COBJD)\n'                                    >> Makefile
     printf '\t$(CCOMPILE) -fPIC -shared $(COBJD) -o $@ $(LD_FLAGSD)\n\n'    >> Makefile
-    printf '$(BUILDCLIBSOS): $(COBJS)\n'                                    >> Makefile
+    printf '$(BUILDLIBCSOS): $(COBJS)\n'                                    >> Makefile
     printf '\t$(CCOMPILE) -fPIC -shared $(COBJS) -o $@ $(LD_FLAGSS)\n\n'    >> Makefile
     printf '$(COBJD): $(BUILDDIR)/double/%%.o : retinas/src/%%.c $(CINC)\n' >> Makefile
     printf '\t$(CCOMPILE) -fPIC -c -DPRECISION=1 $< -o $@\n\n'              >> Makefile
     printf '$(COBJS): $(BUILDDIR)/single/%%.o : retinas/src/%%.c $(CINC)\n' >> Makefile
     printf '\t$(CCOMPILE) -fPIC -c -DPRECISION=0 $< -o $@\n\n'              >> Makefile
     printf 'clean:\n'                                                       >> Makefile
-    printf '\trm -f $(COBJD) $(COBJS) $(BUILDCLIBSOD) $(BUILDCLIBSOS)\n\n'  >> Makefile
+    printf '\trm -f $(COBJD) $(COBJS) $(BUILDLIBCSOD) $(BUILDLIBCSOS)\n\n'  >> Makefile
     printf 'realclean: clean\n'                                             >> Makefile
     printf '\trm -rf build Makefile\n\n'                                    >> Makefile
 else
-    printf '$(BUILDCLIBSOD): $(COBJD)\n'                                    >> Makefile
+    printf '$(BUILDLIBCSOD): $(COBJD)\n'                                    >> Makefile
     printf '\t@echo "Linking shared C library $@"\n'                        >> Makefile
     printf '\t@$(CCOMPILE) -fPIC -shared $(COBJD) -o $@ $(LD_FLAGSD)\n\n'   >> Makefile
-    printf '$(BUILDCLIBSOS): $(COBJS)\n'                                    >> Makefile
+    printf '$(BUILDLIBCSOS): $(COBJS)\n'                                    >> Makefile
     printf '\t@echo "Linking shared C library $@"\n'                        >> Makefile
     printf '\t@$(CCOMPILE) -fPIC -shared $(COBJS) -o $@ $(LD_FLAGSS)\n\n'   >> Makefile
     printf '$(COBJD): $(BUILDDIR)/double/%%.o : retinas/src/%%.c $(CINC)\n' >> Makefile
@@ -690,7 +680,7 @@ else
     printf '\t@$(CCOMPILE) -fPIC -c -DPRECISION=0 $< -o $@\n\n'             >> Makefile
     printf 'clean:\n'                                                       >> Makefile
     printf '\t@echo "Removing object and library files"\n'                  >> Makefile
-    printf '\t@rm -f $(COBJD) $(COBJS) $(BUILDCLIBSOD) $(BUILDCLIBSOS)\n\n' >> Makefile
+    printf '\t@rm -f $(COBJD) $(COBJS) $(BUILDLIBCSOD) $(BUILDLIBCSOS)\n\n' >> Makefile
     printf 'realclean: clean\n'                                             >> Makefile
     printf '\t@echo "Removing build directory and Makefile"\n'              >> Makefile
     printf '\t@rm -rf build Makefile\n\n'                                   >> Makefile
