@@ -2,7 +2,7 @@
 #
 # configure
 #
-# (c) 2023, Leo Werneck
+# (c) 2024, Leo Werneck
 #
 # This is RETINAS's configure script, which is responsible for ensuring users are
 # able to compile, test, and install RETINAS on different systems.
@@ -73,7 +73,7 @@ Syntax: ./configure [-h,--help] [-l,--license] [-r,--reconfigure] [-s,--silent]
                     [--cudalibs="<lib1> <lib2>..."]
                     [--fftwdir=<dir>] [--fftwinc=<dir>] [--fftwlib=<dir>]
                     [--blasdir=<dir>] [--blasinc=<dir>] [--blaslib=<dir>]
-Options:'
+Options:
     -h,--help           Print this message and exit
     -l,--license        Print license information and exit
     -r,--reconfigure    Force overwrite of previous configuration
@@ -102,6 +102,7 @@ Options:'
                                   (see --fftwinc and --fftwlib if not)
     --fftwinc           Sets the path to the FFTW include directory
     --fftwlib           Sets the path to the FFTW lib directory
+    --blasflavor        openblas (default), blas, etc.
     --blasdir           Sets the BLAS base directory. Possible values:
                           <dir> : assumes <dir>/include and <dir>/lib exist
                                   (see --blasinc and --blaslib if not)
@@ -145,10 +146,10 @@ Realpath()
         awk '{gsub(/\/\.\./, "", $0); gsub(/\/\./, "", $0); print}'
 }
 
-NL='
-'
 probe_file()
 {
+    NL='
+'
     # Source: https://stackoverflow.com/questions/10346816
     tmp_=$(find $1 2>/dev/null | grep -F $2)
     # Source: https://unix.stackexchange.com/questions/276834
@@ -177,6 +178,7 @@ fftwlib=""
 blasdir=""
 blasinc=""
 blaslib=""
+blasflavor="openblas"
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -208,6 +210,7 @@ while [ $# -gt 0 ]; do
         --blasdir=*) blasdir=$(echo "$1" | cut -d= -f2);;
         --blasinc=*) blasinc=$(echo "$1" | cut -d= -f2);;
         --blaslib=*) blaslib=$(echo "$1" | cut -d= -f2);;
+        --blasflavor=*) blasflavor=$(echo "$1" | cut -d= -f2);;
         --prefix) prefix=$2; shift;;
         --buildtype) buildtype=$2; shift;;
         --precision) precision=$2; shift;;
@@ -222,6 +225,7 @@ while [ $# -gt 0 ]; do
         --blasdir) blasdir=$2; shift;;
         --blasinc) blasinc=$2; shift;;
         --blaslib) blaslib=$2; shift;;
+        --blasflavor) blasflavor=$2; shift;;
         --) shift; break;;
         -*)
             opt=$1
@@ -285,9 +289,9 @@ check_precision()
 
 check_flags()
 {
-    if [ "$1" == "c" ]; then
+    if [ "$1" = "c" ]; then
         flags="$cflags"
-    elif [ "$1" == "cuda" ]; then
+    elif [ "$1" = "cuda" ]; then
         flags="$cudaflags"
     else
         error "check_flags only supports c or cuda as arguments"
@@ -305,9 +309,9 @@ check_flags()
 
 check_libs()
 {
-    if [ "$1" == "c" ]; then
+    if [ "$1" = "c" ]; then
         libs="$clibs"
-    elif [ "$1" == "cuda" ]; then
+    elif [ "$1" = "cuda" ]; then
         libs="$cudalibs"
     else
         error "check_libs only supports c or cuda as arguments"
@@ -337,10 +341,10 @@ check_compiler()
 
 check_compilers()
 {
-    if [ "$1" == "c" ]; then
+    if [ "$1" = "c" ]; then
         if [ -z $CC ]; then tests="gcc clang icc icx cc"; else tests="$CC"; fi
         msg="Could not find a working C compiler. Please set the environment variable CC."
-    elif [ "$1" == "cuda" ]; then
+    elif [ "$1" = "cuda" ]; then
         if [ -z $NVCC ]; then tests="nvcc"; else tests="$NVCC"; fi
         MSG="COULD not find a working CUDA compiler. Please set the environment variable NVCC."
     else
@@ -354,14 +358,14 @@ check_compilers()
             break;
         fi
     done
-    if [ "$retcc" == "none" ]; then
+    if [ "$retcc" = "none" ]; then
         error "$msg"
     fi
 }
 
 check_build_type()
 {
-    if [ "$1" == "c" ]; then
+    if [ "$1" = "c" ]; then
         printf "Checking if C build type is valid... "
          case $buildtype in
              plain) buildflags=""; break;;
@@ -373,7 +377,7 @@ check_build_type()
                 exit 1;;
          esac
          YES "buildtype: $buildtype; build cflags: $buildflags"
-    elif [ "$1" == "cuda" ]; then
+    elif [ "$1" = "cuda" ]; then
         printf "Checking if CUDA build type is valid... "
         case $buildtype in
             plain) buildflags=""; break;;
@@ -398,8 +402,8 @@ check_lib()
             if [ $have_pkg_config -eq 1 ]; then
                 printf "using pkg-config... "
                 incflags=$(pkg-config $4 --cflags 2>/dev/null)
-                libflags=$(pkg-config $4 --libs --static 2>/dev/null)
-                if [ "$incflags" != "" ] && [ "$libflags" != "" ]; then
+                libflags=$(pkg-config $4 --libs 2>/dev/null)
+                if [ "$libflags" != "" ]; then
                     green "FOUND\n"
                 else
                     NO
@@ -459,7 +463,7 @@ int main() {
         error "The C compiler does not work with libm"
     fi
 
-    check_lib "$blasdir" "$blasinc" "$blaslib" "blas"
+    check_lib "$blasdir" "$blasinc" "$blaslib" "$blasflavor"
     blas_incflags=$incflags
     blas_libflags=$libflags
 
@@ -472,27 +476,26 @@ int main() {
     fi
     # Test blas
     for f in $blas_test_funcs; do
-        if [[ "$f" == *"gemm" ]]; then
-            code="
+      case "$f" in
+        *gemm) code="
 #include <stdio.h>
 #include <cblas.h>
 int main() {
-  // Check for cblas_cgemm
   double alpha = 1;
   double beta  = 0;
   $f(CblasRowMajor, CblasNoTrans, CblasNoTrans, 1, 1, 1, &alpha, NULL, 1, NULL, 1, &beta, NULL, 1);
   return 0;
 }
-"
-        else
-            code="
+";;
+        *) code="
 #include <stdio.h>
 #include <cblas.h>
 int main() {
   return $f(1, NULL, 1);
 }
 "
-        fi
+;;
+      esac
         compiles "$code" $compiler " -O0 $blas_incflags " " $blas_libflags" "Checking if blas library supports function $f... "
         if [ $? -ne 0 ]; then
             error "The blas library not support the function $f"
