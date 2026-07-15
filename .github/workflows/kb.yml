@@ -1,0 +1,86 @@
+name: Knowledge base
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Optional Git base commit; defaults to validated HEAD parent
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  kb:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve explicit diff endpoints
+        id: range
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PATH: ${{ github.event_path }}
+          EVENT_SHA: ${{ github.sha }}
+          MANUAL_BASE: ${{ inputs.base || '' }}
+        run: |
+          command=(
+            python3 scripts/kb.py ci-range
+            --event-name "$EVENT_NAME"
+            --event-file "$EVENT_PATH"
+            --sha "$EVENT_SHA"
+          )
+          if [[ -n "$MANUAL_BASE" ]]; then
+            command+=(--manual-base "$MANUAL_BASE")
+          fi
+          "${command[@]}" >> "$GITHUB_OUTPUT"
+
+      - name: Detect structural scope
+        id: scope
+        if: steps.range.outputs.skip != 'true'
+        env:
+          BASE_SHA: ${{ steps.range.outputs.base }}
+          HEAD_SHA: ${{ steps.range.outputs.head }}
+        run: |
+          set +e
+          git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- \
+            AGENTS.md wiki scripts .github/workflows/kb.yml
+          status=$?
+          set -e
+          if [[ $status -eq 0 ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          elif [[ $status -eq 1 ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            exit "$status"
+          fi
+
+      - name: Check structural contracts
+        if: steps.range.outputs.skip != 'true' && steps.scope.outputs.changed == 'true'
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3 scripts/kb.py check
+
+      - name: Check changed KB whitespace
+        if: steps.range.outputs.skip != 'true' && steps.scope.outputs.changed == 'true'
+        env:
+          BASE_SHA: ${{ steps.range.outputs.base }}
+          HEAD_SHA: ${{ steps.range.outputs.head }}
+        run: |
+          git diff --check "$BASE_SHA" "$HEAD_SHA" -- \
+            AGENTS.md wiki scripts .github/workflows/kb.yml
+
+      - name: Print advisory impact routes
+        if: steps.range.outputs.skip != 'true'
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ steps.range.outputs.base }}
+          HEAD_SHA: ${{ steps.range.outputs.head }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3 scripts/kb.py impact --base "$BASE_SHA" --head "$HEAD_SHA"
